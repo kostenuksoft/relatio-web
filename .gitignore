@@ -416,3 +416,9 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# Project-specific
+appsettings.Development.json
+logs/
+TestResults/
+coverage/
