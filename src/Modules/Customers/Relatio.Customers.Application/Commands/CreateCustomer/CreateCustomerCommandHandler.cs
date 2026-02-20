@@ -1,5 +1,5 @@
 using ErrorOr;
-using Mapster;
+using MapsterMapper;
 using MediatR;
 using Relatio.Customers.Application.DTOs;
 using Relatio.Customers.Domain.Entities;
@@ -14,13 +14,16 @@ public sealed class CreateCustomerCommandHandler : IRequestHandler<CreateCustome
 {
     private readonly ICustomerRepository _customerRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IMapper _mapper;
 
     public CreateCustomerCommandHandler(
         ICustomerRepository customerRepository,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        IMapper mapper)
     {
         _customerRepository = customerRepository;
         _unitOfWork = unitOfWork;
+        _mapper = mapper;
     }
 
     public async Task<ErrorOr<CustomerDto>> Handle(
@@ -49,7 +52,7 @@ public sealed class CreateCustomerCommandHandler : IRequestHandler<CreateCustome
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
-            return customerResult.Value.Adapt<CustomerDto>();
+            return _mapper.Map<CustomerDto>(customerResult.Value);
         }
         catch (Exception)
         {
