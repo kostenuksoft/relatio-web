@@ -12,7 +12,7 @@ using Relatio.Customers.Infrastructure.Data;
 namespace Relatio.Customers.Infrastructure.Migrations
 {
     [DbContext(typeof(CustomersDbContext))]
-    [Migration("20260220191239_InitialCreate")]
+    [Migration("20260220194209_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -31,8 +31,8 @@ namespace Relatio.Customers.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamptz")
                         .HasColumnName("created_at");
 
                     b.Property<string>("Email")
@@ -63,8 +63,8 @@ namespace Relatio.Customers.Infrastructure.Migrations
                         .HasColumnType("character varying(50)")
                         .HasColumnName("status");
 
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamptz")
                         .HasColumnName("updated_at");
 
                     b.HasKey("Id");

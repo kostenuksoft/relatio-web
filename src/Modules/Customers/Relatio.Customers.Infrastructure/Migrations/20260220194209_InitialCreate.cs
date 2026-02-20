@@ -21,8 +21,8 @@ namespace Relatio.Customers.Infrastructure.Migrations
                     phone = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
                     industry = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
                     status = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    created_at = table.Column<DateTimeOffset>(type: "timestamptz", nullable: false),
+                    updated_at = table.Column<DateTimeOffset>(type: "timestamptz", nullable: true)
                 },
                 constraints: table =>
                 {

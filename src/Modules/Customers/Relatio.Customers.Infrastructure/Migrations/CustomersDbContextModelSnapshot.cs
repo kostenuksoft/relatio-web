@@ -28,8 +28,8 @@ namespace Relatio.Customers.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamptz")
                         .HasColumnName("created_at");
 
                     b.Property<string>("Email")
@@ -60,8 +60,8 @@ namespace Relatio.Customers.Infrastructure.Migrations
                         .HasColumnType("character varying(50)")
                         .HasColumnName("status");
 
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamptz")
                         .HasColumnName("updated_at");
 
                     b.HasKey("Id");

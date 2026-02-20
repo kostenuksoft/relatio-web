@@ -52,10 +52,12 @@ public sealed class CustomerConfiguration : IEntityTypeConfiguration<Customer>
 
         builder.Property(c => c.CreatedAt)
             .HasColumnName("created_at")
+            .HasColumnType("timestamptz")
             .IsRequired();
 
         builder.Property(c => c.UpdatedAt)
-            .HasColumnName("updated_at");
+            .HasColumnName("updated_at")
+            .HasColumnType("timestamptz");
 
         builder.Ignore(c => c.DomainEvents);
     }
