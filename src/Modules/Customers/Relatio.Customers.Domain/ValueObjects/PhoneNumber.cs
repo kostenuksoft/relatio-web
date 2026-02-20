@@ -17,6 +17,8 @@ public sealed partial record PhoneNumber
 
     public static PhoneNumber CreateUnsafe(string value) => new(value);
 
+    public static explicit operator string(PhoneNumber phone) => phone.Value;
+
     public static ErrorOr<PhoneNumber> Create(string value)
     {
         if (string.IsNullOrWhiteSpace(value))

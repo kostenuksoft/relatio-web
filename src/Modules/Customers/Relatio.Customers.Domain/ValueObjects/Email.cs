@@ -17,6 +17,8 @@ public sealed partial record Email
 
     public static Email CreateUnsafe(string value) => new(value);
 
+    public static explicit operator string(Email email) => email.Value;
+
     public static ErrorOr<Email> Create(string value)
     {
         if (string.IsNullOrWhiteSpace(value))
