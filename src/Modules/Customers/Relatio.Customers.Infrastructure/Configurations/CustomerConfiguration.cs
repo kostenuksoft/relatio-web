@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Relatio.Customers.Domain.Constants;
 using Relatio.Customers.Domain.Entities;
 using Relatio.Customers.Domain.ValueObjects;
 
@@ -19,12 +20,12 @@ public sealed class CustomerConfiguration : IEntityTypeConfiguration<Customer>
 
         builder.Property(c => c.Name)
             .HasColumnName("name")
-            .HasMaxLength(255)
+            .HasMaxLength(CustomerConstraints.NameMaxLength)
             .IsRequired();
 
         builder.Property(c => c.Email)
             .HasColumnName("email")
-            .HasMaxLength(255)
+            .HasMaxLength(CustomerConstraints.EmailMaxLength)
             .IsRequired()
             .HasConversion(
                 email => email.Value,
@@ -35,18 +36,18 @@ public sealed class CustomerConfiguration : IEntityTypeConfiguration<Customer>
 
         builder.Property(c => c.Phone)
             .HasColumnName("phone")
-            .HasMaxLength(50)
+            .HasMaxLength(CustomerConstraints.PhoneMaxLength)
             .HasConversion(
                 phone => phone == null ? null : phone.Value,
                 value => value == null ? null : PhoneNumber.CreateUnsafe(value));
 
         builder.Property(c => c.Industry)
             .HasColumnName("industry")
-            .HasMaxLength(100);
+            .HasMaxLength(CustomerConstraints.IndustryMaxLength);
 
         builder.Property(c => c.Status)
             .HasColumnName("status")
-            .HasMaxLength(50)
+            .HasMaxLength(CustomerConstraints.StatusMaxLength)
             .IsRequired()
             .HasConversion<string>();
 
