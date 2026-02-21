@@ -36,7 +36,7 @@ public sealed class ValidationBehavior<TRequest, TResponse> : IPipelineBehavior<
             .ToList();
 
         if (errors.Count != 0)
-            return (TResponse)(object)errors;
+            return (TResponse)(dynamic)errors;
 
         return await next();
     }
