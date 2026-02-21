@@ -3,6 +3,7 @@ using MediatR;
 using Relatio.Identity.Application.DTOs;
 using Relatio.Identity.Application.Interfaces;
 using Relatio.Identity.Application.Models;
+using Relatio.Shared.Abstractions;
 
 namespace Relatio.Identity.Application.Commands.Login;
 
@@ -11,15 +12,18 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, ErrorOr<
     private readonly IUserService _userService;
     private readonly IJwtTokenService _jwtTokenService;
     private readonly IRefreshTokenStore _refreshTokenStore;
+    private readonly IUnitOfWork _unitOfWork;
 
     public LoginCommandHandler(
         IUserService userService,
         IJwtTokenService jwtTokenService,
-        IRefreshTokenStore refreshTokenStore)
+        IRefreshTokenStore refreshTokenStore,
+        IUnitOfWork unitOfWork)
     {
         _userService = userService;
         _jwtTokenService = jwtTokenService;
         _refreshTokenStore = refreshTokenStore;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<ErrorOr<AuthTokenResponse>> Handle(LoginCommand request, CancellationToken cancellationToken)
@@ -44,6 +48,7 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, ErrorOr<
         var refreshToken = _jwtTokenService.GenerateRefreshToken(principal.UserId);
 
         await _refreshTokenStore.SaveAsync(refreshToken, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return new AuthTokenResponse(
             accessTokenResult.Token,

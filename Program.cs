@@ -1,9 +1,16 @@
+using System.Diagnostics;
+using System.Reflection;
 using Serilog;
 using Asp.Versioning;
 using Scalar.AspNetCore;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using HealthChecks.UI.Client;
 using Relatio.Customers.Infrastructure;
+using Relatio.Customers.Infrastructure.Data;
 using Relatio.Customers.Application;
 using Relatio.Identity.Infrastructure;
+using Relatio.Identity.Infrastructure.Data;
 using Relatio.Identity.Application;
 using Relatio.Identity.Infrastructure.Seeders;
 using Relatio.Infrastructure;
@@ -39,7 +46,14 @@ try
         ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
     builder.Services.AddHealthChecks()
-        .AddNpgSql(connectionString);
+        .AddNpgSql(connectionString, name: "postgres", tags: ["db", "ready"])
+        .AddCheck("application", () => HealthCheckResult.Healthy(
+            data: new Dictionary<string, object>
+            {
+                ["version"] = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "unknown",
+                ["environment"] = builder.Environment.EnvironmentName,
+                ["uptime"] = (DateTime.UtcNow - Process.GetCurrentProcess().StartTime.ToUniversalTime()).ToString(@"dd\.hh\:mm\:ss")
+            }), tags: ["ready"]);
 
     builder.Services.AddCustomersInfrastructure(builder.Configuration);
     builder.Services.AddCustomersApplication();
@@ -71,7 +85,16 @@ try
         app.MapScalarApiReference();
     }
 
-    app.MapHealthChecks("/health");
+    app.MapHealthChecks("/health/live", new HealthCheckOptions
+    {
+        Predicate = _ => false
+    });
+
+    app.MapHealthChecks("/health/ready", new HealthCheckOptions
+    {
+        Predicate = check => check.Tags.Contains("ready"),
+        ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+    });
 
     app.MapControllers();
 
