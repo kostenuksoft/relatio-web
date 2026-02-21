@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MediatR;
 using Asp.Versioning;
@@ -13,15 +14,13 @@ using Relatio.Shared.Controllers;
 
 namespace Relatio.Customers.Api.Controllers;
 
+[Authorize]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/customers")]
 public sealed class CustomersController : ApiController
 {
-    private readonly ISender _sender;
-
-    public CustomersController(ISender sender)
+    public CustomersController(ISender sender) : base(sender)
     {
-        _sender = sender;
     }
 
     [HttpPost]
@@ -35,7 +34,7 @@ public sealed class CustomersController : ApiController
             request.Phone,
             request.Industry);
 
-        var result = await _sender.Send(command, cancellationToken);
+        var result = await Sender.Send(command, cancellationToken);
 
         return result.Match(
             customer => CreatedAtAction(nameof(GetById), new { id = customer.Id }, customer),
@@ -48,7 +47,7 @@ public sealed class CustomersController : ApiController
         CancellationToken cancellationToken)
     {
         var query = new GetCustomerByIdQuery(id);
-        var result = await _sender.Send(query, cancellationToken);
+        var result = await Sender.Send(query, cancellationToken);
 
         return result.Match(
             customer => Ok(customer),
@@ -66,7 +65,7 @@ public sealed class CustomersController : ApiController
         CancellationToken cancellationToken = default)
     {
         var query = new GetCustomersPagedQuery(name, status, sortBy, sortDirection, page, pageSize);
-        var result = await _sender.Send(query, cancellationToken);
+        var result = await Sender.Send(query, cancellationToken);
 
         return result.Match(
             pagedResult => Ok(pagedResult),
@@ -86,7 +85,7 @@ public sealed class CustomersController : ApiController
             request.Phone,
             request.Industry);
 
-        var result = await _sender.Send(command, cancellationToken);
+        var result = await Sender.Send(command, cancellationToken);
 
         return result.Match(
             _ => NoContent(),
@@ -99,7 +98,7 @@ public sealed class CustomersController : ApiController
         CancellationToken cancellationToken)
     {
         var command = new DeleteCustomerCommand(id);
-        var result = await _sender.Send(command, cancellationToken);
+        var result = await Sender.Send(command, cancellationToken);
 
         return result.Match(
             _ => NoContent(),
@@ -112,7 +111,7 @@ public sealed class CustomersController : ApiController
         CancellationToken cancellationToken)
     {
         var command = new ActivateCustomerCommand(id);
-        var result = await _sender.Send(command, cancellationToken);
+        var result = await Sender.Send(command, cancellationToken);
 
         return result.Match(
             _ => NoContent(),
@@ -125,7 +124,7 @@ public sealed class CustomersController : ApiController
         CancellationToken cancellationToken)
     {
         var command = new DeactivateCustomerCommand(id);
-        var result = await _sender.Send(command, cancellationToken);
+        var result = await Sender.Send(command, cancellationToken);
 
         return result.Match(
             _ => NoContent(),
