@@ -2,12 +2,20 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Http;
 using ErrorOr;
+using MediatR;
 
 namespace Relatio.Shared.Controllers;
 
 [ApiController]
 public abstract class ApiController : ControllerBase
 {
+    protected readonly ISender Sender;
+
+    protected ApiController(ISender sender)
+    {
+        Sender = sender;
+    }
+
     protected IActionResult HandleErrors(List<Error> errors)
     {
         if (errors.Count == 0)

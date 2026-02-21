@@ -1,6 +1,9 @@
 param(
     [Parameter(Mandatory=$true)]
-    [string]$Module
+    [string]$Module,
+
+    [Parameter(Mandatory=$true)]
+    [string]$MigrationName
 )
 
 if (-Not (Test-Path .env)) {
@@ -35,16 +38,17 @@ if (-Not (Test-Path $projectPath)) {
     exit 1
 }
 
-Write-Host "Applying $Module database migrations (context: $contextName)..." -ForegroundColor Green
+Write-Host "Creating $Module migration: $MigrationName (context: $contextName)" -ForegroundColor Green
 
-dotnet ef database update `
+dotnet ef migrations add $MigrationName `
     --project $projectPath `
     --startup-project Relatio.csproj `
-    --context $contextName
+    --context $contextName `
+    --output-dir Migrations
 
 if ($LASTEXITCODE -eq 0) {
-    Write-Host "Database updated successfully!" -ForegroundColor Green
+    Write-Host "Migration created successfully!" -ForegroundColor Green
 } else {
-    Write-Host "Database update failed!" -ForegroundColor Red
+    Write-Host "Migration failed!" -ForegroundColor Red
     exit 1
 }
