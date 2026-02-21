@@ -105,13 +105,13 @@ public sealed class CustomerRepository : ICustomerRepository
     {
         return await _context.Customers
             .AsNoTracking()
-            .AnyAsync(c => c.Email.Value == email.Value, cancellationToken);
+            .AnyAsync(c => c.Email == email, cancellationToken);
     }
 
     public async Task<bool> ExistsByEmailExcludingAsync(Email email, Guid excludeCustomerId, CancellationToken cancellationToken = default)
     {
         return await _context.Customers
             .AsNoTracking()
-            .AnyAsync(c => c.Email.Value == email.Value && c.Id != excludeCustomerId, cancellationToken);
+            .AnyAsync(c => c.Email == email && c.Id != excludeCustomerId, cancellationToken);
     }
 }
