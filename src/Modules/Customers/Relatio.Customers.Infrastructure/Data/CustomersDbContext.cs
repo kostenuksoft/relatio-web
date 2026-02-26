@@ -1,11 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Relatio.Customers.Domain.Entities;
+using Relatio.Customers.Domain.Interfaces;
 using Relatio.Shared.Abstractions;
 
 namespace Relatio.Customers.Infrastructure.Data;
 
-public sealed class CustomersDbContext : DbContext, IUnitOfWork
+public sealed class CustomersDbContext : DbContext, ICustomersUnitOfWork
 {
     private IDbContextTransaction? _currentTransaction;
 

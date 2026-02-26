@@ -4,7 +4,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Relatio.Customers.Domain.Interfaces;
 using Relatio.Customers.Infrastructure.Data;
 using Relatio.Customers.Infrastructure.Repositories;
-using Relatio.Shared.Abstractions;
 
 namespace Relatio.Customers.Infrastructure;
 
@@ -20,7 +19,7 @@ public static class DependencyInjection
         services.AddDbContext<CustomersDbContext>(options =>
             options.UseNpgsql(connectionString));
 
-        services.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<CustomersDbContext>());
+        services.AddScoped<ICustomersUnitOfWork>(provider => provider.GetRequiredService<CustomersDbContext>());
         services.AddScoped<ICustomerRepository, CustomerRepository>();
 
         return services;

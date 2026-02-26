@@ -1,5 +1,5 @@
 using Relatio.Customers.Domain.Entities;
-using Relatio.Customers.Domain.ValueObjects;
+using Relatio.Shared.ValueObjects;
 using Relatio.Shared.Abstractions;
 using Relatio.Shared.Models;
 

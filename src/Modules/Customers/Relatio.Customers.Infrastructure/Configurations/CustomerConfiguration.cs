@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Relatio.Customers.Domain.Constants;
 using Relatio.Customers.Domain.Entities;
-using Relatio.Customers.Domain.ValueObjects;
+using Relatio.Shared.ValueObjects;
 
 namespace Relatio.Customers.Infrastructure.Configurations;
 

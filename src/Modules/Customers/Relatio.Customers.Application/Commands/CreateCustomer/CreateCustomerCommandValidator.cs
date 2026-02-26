@@ -1,6 +1,6 @@
 using FluentValidation;
 using Relatio.Customers.Domain.Constants;
-using Relatio.Customers.Domain.ValueObjects;
+using Relatio.Shared.ValueObjects;
 
 namespace Relatio.Customers.Application.Commands.CreateCustomer;
 

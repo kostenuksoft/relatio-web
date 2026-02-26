@@ -5,20 +5,18 @@ using Relatio.Customers.Application.DTOs;
 using Relatio.Customers.Domain.Entities;
 using Relatio.Customers.Domain.Errors;
 using Relatio.Customers.Domain.Interfaces;
-using Relatio.Customers.Domain.ValueObjects;
-using Relatio.Shared.Abstractions;
-
+using Relatio.Shared.ValueObjects;
 namespace Relatio.Customers.Application.Commands.CreateCustomer;
 
 public sealed class CreateCustomerCommandHandler : IRequestHandler<CreateCustomerCommand, ErrorOr<CustomerDto>>
 {
     private readonly ICustomerRepository _customerRepository;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly ICustomersUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
 
     public CreateCustomerCommandHandler(
         ICustomerRepository customerRepository,
-        IUnitOfWork unitOfWork,
+        ICustomersUnitOfWork unitOfWork,
         IMapper mapper)
     {
         _customerRepository = customerRepository;

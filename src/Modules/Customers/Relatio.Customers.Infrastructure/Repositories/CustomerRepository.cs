@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Relatio.Customers.Domain.Entities;
 using Relatio.Customers.Domain.Enums;
 using Relatio.Customers.Domain.Interfaces;
-using Relatio.Customers.Domain.ValueObjects;
+using Relatio.Shared.ValueObjects;
 using Relatio.Customers.Infrastructure.Data;
 using Relatio.Shared.Models;
 

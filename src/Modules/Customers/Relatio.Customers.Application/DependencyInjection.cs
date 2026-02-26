@@ -3,6 +3,7 @@ using FluentValidation;
 using Mapster;
 using MapsterMapper;
 using MediatR;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Relatio.Shared.Behaviors;
 
@@ -22,10 +23,9 @@ public static class DependencyInjection
 
         services.AddValidatorsFromAssembly(assembly);
 
-        var config = new TypeAdapterConfig();
-        config.Scan(assembly);
-        services.AddSingleton(config);
-        services.AddScoped<IMapper, ServiceMapper>();
+        TypeAdapterConfig.GlobalSettings.Scan(assembly);
+        services.TryAddSingleton(TypeAdapterConfig.GlobalSettings);
+        services.TryAddScoped<IMapper, ServiceMapper>();
 
         return services;
     }

@@ -2,19 +2,18 @@ using ErrorOr;
 using MediatR;
 using Relatio.Customers.Domain.Errors;
 using Relatio.Customers.Domain.Interfaces;
-using Relatio.Customers.Domain.ValueObjects;
-using Relatio.Shared.Abstractions;
+using Relatio.Shared.ValueObjects;
 
 namespace Relatio.Customers.Application.Commands.UpdateCustomer;
 
 public sealed class UpdateCustomerCommandHandler : IRequestHandler<UpdateCustomerCommand, ErrorOr<Success>>
 {
     private readonly ICustomerRepository _customerRepository;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly ICustomersUnitOfWork _unitOfWork;
 
     public UpdateCustomerCommandHandler(
         ICustomerRepository customerRepository,
-        IUnitOfWork unitOfWork)
+        ICustomersUnitOfWork unitOfWork)
     {
         _customerRepository = customerRepository;
         _unitOfWork = unitOfWork;

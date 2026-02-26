@@ -1,5 +1,5 @@
 using FluentAssertions;
-using Relatio.Customers.Domain.ValueObjects;
+using Relatio.Shared.ValueObjects;
 
 namespace Relatio.Customers.Tests.Domain;
 

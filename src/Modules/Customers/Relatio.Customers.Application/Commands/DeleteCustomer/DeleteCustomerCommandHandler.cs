@@ -2,18 +2,17 @@ using ErrorOr;
 using MediatR;
 using Relatio.Customers.Domain.Errors;
 using Relatio.Customers.Domain.Interfaces;
-using Relatio.Shared.Abstractions;
 
 namespace Relatio.Customers.Application.Commands.DeleteCustomer;
 
 public sealed class DeleteCustomerCommandHandler : IRequestHandler<DeleteCustomerCommand, ErrorOr<Success>>
 {
     private readonly ICustomerRepository _customerRepository;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly ICustomersUnitOfWork _unitOfWork;
 
     public DeleteCustomerCommandHandler(
         ICustomerRepository customerRepository,
-        IUnitOfWork unitOfWork)
+        ICustomersUnitOfWork unitOfWork)
     {
         _customerRepository = customerRepository;
         _unitOfWork = unitOfWork;

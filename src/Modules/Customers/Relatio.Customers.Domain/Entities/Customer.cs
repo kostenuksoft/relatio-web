@@ -1,8 +1,8 @@
 using ErrorOr;
 using Relatio.Customers.Domain.Enums;
 using Relatio.Customers.Domain.Events;
-using Relatio.Customers.Domain.ValueObjects;
 using Relatio.Shared.Abstractions;
+using Relatio.Shared.ValueObjects;
 
 namespace Relatio.Customers.Domain.Entities;
 
