@@ -14,6 +14,12 @@ using Relatio.Identity.Infrastructure.Data;
 using Relatio.Identity.Application;
 using Relatio.Identity.Infrastructure.Seeders;
 using Relatio.Infrastructure;
+using Relatio.Contacts.Infrastructure;
+using Relatio.Contacts.Application;
+using Relatio.Sales.Infrastructure;
+using Relatio.Sales.Application;
+using Relatio.Tasks.Infrastructure;
+using Relatio.Tasks.Application;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -60,6 +66,15 @@ try
 
     builder.Services.AddIdentityInfrastructure(builder.Configuration);
     builder.Services.AddIdentityApplication();
+
+    builder.Services.AddContactsInfrastructure(builder.Configuration);
+    builder.Services.AddContactsApplication();
+
+    builder.Services.AddSalesInfrastructure(builder.Configuration);
+    builder.Services.AddSalesApplication();
+
+    builder.Services.AddTasksInfrastructure(builder.Configuration);
+    builder.Services.AddTasksApplication();
 
     var app = builder.Build();
 
