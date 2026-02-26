@@ -22,7 +22,7 @@ public sealed class RestoreContactCommandHandler : IRequestHandler<RestoreContac
         RestoreContactCommand command,
         CancellationToken cancellationToken)
     {
-        var contact = await _contactRepository.GetByIdTrackedAsync(command.Id, cancellationToken);
+        var contact = await _contactRepository.GetDeletedByIdTrackedAsync(command.Id, cancellationToken);
         if (contact is null)
             return ContactErrors.NotFound;
 

@@ -29,6 +29,13 @@ public sealed class ContactRepository : IContactRepository
             .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
     }
 
+    public async Task<Contact?> GetDeletedByIdTrackedAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _context.Contacts
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(c => c.Id == id && c.IsDeleted, cancellationToken);
+    }
+
     public async Task<PagedResult<Contact>> GetPagedAsync(
         Guid? customerId,
         string? nameFilter,

@@ -8,6 +8,7 @@ namespace Relatio.Contacts.Domain.Interfaces;
 public interface IContactRepository : IRepository<Contact>
 {
     Task<Contact?> GetByIdTrackedAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<Contact?> GetDeletedByIdTrackedAsync(Guid id, CancellationToken cancellationToken = default);
     Task<bool> ExistsByEmailAsync(Email email, CancellationToken cancellationToken = default);
     Task<bool> ExistsByEmailExcludingAsync(Email email, Guid excludeContactId, CancellationToken cancellationToken = default);
     Task<PagedResult<Contact>> GetPagedAsync(
