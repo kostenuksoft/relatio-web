@@ -62,7 +62,7 @@ try
                 ValidateIssuerSigningKey = true,
                 ValidIssuer = jwtIssuer,
                 ValidAudience = jwtAudience,
-                IssuerSigningKey = new SymmetricSecurityKey(Convert.FromBase64String(jwtSecret)),
+                IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(jwtSecret)),
                 ClockSkew = TimeSpan.Zero
             };
         });
@@ -87,7 +87,7 @@ try
 
     var app = builder.Build();
 
-    Log.Information("Starting Relatio Sales service");
+    Log.Information("Sales service - starting...");
 
     app.UseMiddleware<CorrelationIdMiddleware>();
     app.UseExceptionHandler();
@@ -119,7 +119,7 @@ try
 }
 catch (Exception ex)
 {
-    Log.Fatal(ex, "Sales service startup failed");
+    Log.Fatal(ex, "Sales service - startup failed");
     throw;
 }
 finally
