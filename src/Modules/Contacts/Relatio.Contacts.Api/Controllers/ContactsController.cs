@@ -15,13 +15,9 @@ namespace Relatio.Contacts.Api.Controllers;
 
 [Authorize]
 [ApiVersion("1.0")]
-[Route("api/v{version:apiVersion}/contacts")]
-public sealed class ContactsController : ApiController
+[Route("api/contacts")]
+public sealed class ContactsController(ISender sender) : ApiController(sender)
 {
-    public ContactsController(ISender sender) : base(sender)
-    {
-    }
-
     [HttpPost]
     public async Task<IActionResult> Create(
         [FromBody] CreateContactRequest request,
@@ -39,7 +35,7 @@ public sealed class ContactsController : ApiController
 
         return result.Match(
             contact => CreatedAtAction(nameof(GetById), new { id = contact.Id }, contact),
-            errors => HandleErrors(errors));
+            HandleErrors);
     }
 
     [HttpGet("{id:guid}")]
@@ -51,8 +47,8 @@ public sealed class ContactsController : ApiController
         var result = await Sender.Send(query, cancellationToken);
 
         return result.Match(
-            contact => Ok(contact),
-            errors => HandleErrors(errors));
+            Ok,
+            HandleErrors);
     }
 
     [HttpGet]
@@ -69,8 +65,9 @@ public sealed class ContactsController : ApiController
         var result = await Sender.Send(query, cancellationToken);
 
         return result.Match(
-            pagedResult => Ok(pagedResult),
-            errors => HandleErrors(errors));
+            Ok,
+            HandleErrors
+        );
     }
 
     [HttpPut("{id:guid}")]
@@ -85,13 +82,15 @@ public sealed class ContactsController : ApiController
             request.LastName,
             request.Email,
             request.Phone,
-            request.Position);
+            request.Position
+        );
 
         var result = await Sender.Send(command, cancellationToken);
 
         return result.Match(
             _ => NoContent(),
-            errors => HandleErrors(errors));
+            HandleErrors
+        );
     }
 
     [HttpDelete("{id:guid}")]
@@ -104,7 +103,7 @@ public sealed class ContactsController : ApiController
 
         return result.Match(
             _ => NoContent(),
-            errors => HandleErrors(errors));
+            HandleErrors);
     }
 
     [HttpPost("{id:guid}/restore")]
@@ -117,6 +116,6 @@ public sealed class ContactsController : ApiController
 
         return result.Match(
             _ => NoContent(),
-            errors => HandleErrors(errors));
+            HandleErrors);
     }
 }

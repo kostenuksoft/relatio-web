@@ -16,7 +16,7 @@ namespace Relatio.Customers.Api.Controllers;
 
 [Authorize]
 [ApiVersion("1.0")]
-[Route("api/v{version:apiVersion}/customers")]
+[Route("api/customers")]
 public sealed class CustomersController : ApiController
 {
     public CustomersController(ISender sender) : base(sender)

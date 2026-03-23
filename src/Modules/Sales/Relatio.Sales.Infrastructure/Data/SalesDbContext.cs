@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Relatio.Sales.Domain.Entities;
 using Relatio.Sales.Domain.Interfaces;
+using Relatio.Sales.Infrastructure.Outbox;
 
 namespace Relatio.Sales.Infrastructure.Data;
 
@@ -14,6 +15,7 @@ public sealed class SalesDbContext : DbContext, ISalesUnitOfWork
     }
 
     public DbSet<Deal> Deals => Set<Deal>();
+    public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -16,7 +16,7 @@ namespace Relatio.Tasks.Api.Controllers;
 
 [Authorize]
 [ApiVersion("1.0")]
-[Route("api/v{version:apiVersion}/tasks")]
+[Route("api/tasks")]
 public sealed class TasksController : ApiController
 {
     public TasksController(ISender sender) : base(sender)

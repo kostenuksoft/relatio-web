@@ -11,8 +11,6 @@
     <ProjectReference Include="src\Modules\Customers\Relatio.Customers.Infrastructure\Relatio.Customers.Infrastructure.csproj" />
     <ProjectReference Include="src\Modules\Contacts\Relatio.Contacts.Api\Relatio.Contacts.Api.csproj" />
     <ProjectReference Include="src\Modules\Contacts\Relatio.Contacts.Infrastructure\Relatio.Contacts.Infrastructure.csproj" />
-    <ProjectReference Include="src\Modules\Sales\Relatio.Sales.Api\Relatio.Sales.Api.csproj" />
-    <ProjectReference Include="src\Modules\Sales\Relatio.Sales.Infrastructure\Relatio.Sales.Infrastructure.csproj" />
     <ProjectReference Include="src\Modules\Tasks\Relatio.Tasks.Api\Relatio.Tasks.Api.csproj" />
     <ProjectReference Include="src\Modules\Tasks\Relatio.Tasks.Infrastructure\Relatio.Tasks.Infrastructure.csproj" />
     <ProjectReference Include="src\Modules\Identity\Relatio.Identity.Api\Relatio.Identity.Api.csproj" />
@@ -21,6 +19,7 @@
 
   <ItemGroup>
     <PackageReference Include="Asp.Versioning.Http" Version="8.1.1" />
+    <PackageReference Include="RabbitMQ.Client" Version="7.2.1" />
     <PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="9.0.0" />
     <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="9.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.3" />

@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
-namespace Relatio.Infrastructure;
+namespace Relatio.Shared.Infrastructure;
 
 public sealed class GlobalExceptionHandler : IExceptionHandler
 {

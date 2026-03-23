@@ -38,11 +38,14 @@ if (-Not (Test-Path $projectPath)) {
     exit 1
 }
 
+$hostPath = "src/Modules/$Module/Relatio.$Module.Host/Relatio.$Module.Host.csproj"
+$startupProject = if (Test-Path $hostPath) { $hostPath } else { "Relatio.csproj" }
+
 Write-Host "Creating $Module migration: $MigrationName (context: $contextName)" -ForegroundColor Green
 
 dotnet ef migrations add $MigrationName `
     --project $projectPath `
-    --startup-project Relatio.csproj `
+    --startup-project $startupProject `
     --context $contextName `
     --output-dir Migrations
 

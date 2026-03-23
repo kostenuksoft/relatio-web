@@ -27,7 +27,7 @@ public static class IdentitySeeder
                 logger.LogInformation("Role {Role} created", role);
             }
         }
-
+        
         var adminEmail = configuration["Identity:AdminEmail"]
             ?? throw new InvalidOperationException("Admin email not configured. Set 'Identity:AdminEmail'.");
         var adminPassword = configuration["Identity:AdminPassword"]

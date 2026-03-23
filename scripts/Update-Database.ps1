@@ -35,11 +35,14 @@ if (-Not (Test-Path $projectPath)) {
     exit 1
 }
 
+$hostPath = "src/Modules/$Module/Relatio.$Module.Host/Relatio.$Module.Host.csproj"
+$startupProject = if (Test-Path $hostPath) { $hostPath } else { "Relatio.csproj" }
+
 Write-Host "Applying $Module database migrations (context: $contextName)..." -ForegroundColor Green
 
 dotnet ef database update `
     --project $projectPath `
-    --startup-project Relatio.csproj `
+    --startup-project $startupProject `
     --context $contextName
 
 if ($LASTEXITCODE -eq 0) {

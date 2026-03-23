@@ -11,7 +11,7 @@ using Relatio.Shared.Controllers;
 namespace Relatio.Identity.Api.Controllers;
 
 [ApiVersion("1.0")]
-[Route("api/v{version:apiVersion}/auth")]
+[Route("api/auth")]
 public sealed class AuthController : ApiController
 {
     public AuthController(ISender sender) : base(sender)

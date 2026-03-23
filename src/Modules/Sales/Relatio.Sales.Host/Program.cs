@@ -1,24 +1,17 @@
 using System.Diagnostics;
 using System.Reflection;
-using Serilog;
 using Asp.Versioning;
-using Scalar.AspNetCore;
+using HealthChecks.UI.Client;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using HealthChecks.UI.Client;
-using Relatio.Customers.Infrastructure;
-using Relatio.Customers.Infrastructure.Data;
-using Relatio.Customers.Application;
-using Relatio.Identity.Infrastructure;
-using Relatio.Identity.Infrastructure.Data;
-using Relatio.Identity.Application;
-using Relatio.Identity.Infrastructure.Seeders;
-using Relatio.Infrastructure.Messaging;
+using Microsoft.IdentityModel.Tokens;
+using Relatio.Sales.Application;
+using Relatio.Sales.Infrastructure;
 using Relatio.Shared.Infrastructure;
-using Relatio.Contacts.Infrastructure;
-using Relatio.Contacts.Application;
-using Relatio.Tasks.Infrastructure;
-using Relatio.Tasks.Application;
+using Relatio.Shared.Middleware;
+using Scalar.AspNetCore;
+using Serilog;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -49,8 +42,32 @@ try
     }).AddMvc();
 
     builder.Services.AddProblemDetails();
-
     builder.Services.AddOpenApi();
+
+    var jwtSecret = builder.Configuration["Jwt:Secret"]
+        ?? throw new InvalidOperationException("Jwt:Secret is not configured.");
+    var jwtIssuer = builder.Configuration["Jwt:Issuer"]
+        ?? throw new InvalidOperationException("Jwt:Issuer is not configured.");
+    var jwtAudience = builder.Configuration["Jwt:Audience"]
+        ?? throw new InvalidOperationException("Jwt:Audience is not configured.");
+
+    builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        .AddJwtBearer(options =>
+        {
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = jwtIssuer,
+                ValidAudience = jwtAudience,
+                IssuerSigningKey = new SymmetricSecurityKey(Convert.FromBase64String(jwtSecret)),
+                ClockSkew = TimeSpan.Zero
+            };
+        });
+
+    builder.Services.AddAuthorization();
 
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
         ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
@@ -65,35 +82,16 @@ try
                 ["uptime"] = (DateTime.UtcNow - Process.GetCurrentProcess().StartTime.ToUniversalTime()).ToString(@"dd\.hh\:mm\:ss")
             }), tags: ["ready"]);
 
-    builder.Services.AddCustomersInfrastructure(builder.Configuration);
-    builder.Services.AddCustomersApplication();
-
-    builder.Services.AddIdentityInfrastructure(builder.Configuration);
-    builder.Services.AddIdentityApplication();
-
-    builder.Services.AddContactsInfrastructure(builder.Configuration);
-    builder.Services.AddContactsApplication();
-
-    builder.Services.AddTasksInfrastructure(builder.Configuration);
-    builder.Services.AddTasksApplication();
-
-    builder.Services.Configure<RabbitMqConsumerSettings>(builder.Configuration.GetSection("RabbitMq"));
-    builder.Services.AddHostedService<DealCreatedConsumer>();
+    builder.Services.AddSalesInfrastructure(builder.Configuration);
+    builder.Services.AddSalesApplication();
 
     var app = builder.Build();
 
-    Log.Information("Starting Relatio CRM application");
+    Log.Information("Starting Relatio Sales service");
 
-    if (app.Environment.IsDevelopment() ||
-        app.Configuration.GetValue<bool>("Identity:RunSeederOnStartup"))
-    {
-        using var scope = app.Services.CreateScope();
-        await IdentitySeeder.SeedAsync(scope.ServiceProvider);
-    }
-
+    app.UseMiddleware<CorrelationIdMiddleware>();
     app.UseExceptionHandler();
     app.UseStatusCodePages();
-
     app.UseHttpsRedirection();
     app.UseAuthentication();
     app.UseAuthorization();
@@ -121,7 +119,7 @@ try
 }
 catch (Exception ex)
 {
-    Log.Fatal(ex, "Application startup failed");
+    Log.Fatal(ex, "Sales service startup failed");
     throw;
 }
 finally

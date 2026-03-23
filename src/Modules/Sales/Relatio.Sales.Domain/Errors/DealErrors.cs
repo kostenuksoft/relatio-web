@@ -15,4 +15,12 @@ public static class DealErrors
     public static readonly Error AlreadyDeleted = Error.Conflict(
         code: "Deal.AlreadyDeleted",
         description: "Deal is already deleted.");
+
+    public static readonly Error CustomerNotFound = Error.NotFound(
+        code: "Deal.CustomerNotFound",
+        description: "The specified customer does not exist.");
+
+    public static readonly Error CustomerServiceUnavailable = Error.Failure(
+        code: "Deal.CustomerServiceUnavailable",
+        description: "The customer service is currently unavailable. Please try again later.");
 }

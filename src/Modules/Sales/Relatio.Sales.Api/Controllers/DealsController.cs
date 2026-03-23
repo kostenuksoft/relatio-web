@@ -15,7 +15,7 @@ namespace Relatio.Sales.Api.Controllers;
 
 [Authorize]
 [ApiVersion("1.0")]
-[Route("api/v{version:apiVersion}/deals")]
+[Route("api/deals")]
 public sealed class DealsController : ApiController
 {
     public DealsController(ISender sender) : base(sender)

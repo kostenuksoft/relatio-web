@@ -28,6 +28,24 @@ services:
     volumes:
       - relatio_seq_data:/data
 
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: relatio_rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - relatio_rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 volumes:
   relatio_postgres_data:
   relatio_seq_data:
+  relatio_rabbitmq_data:
