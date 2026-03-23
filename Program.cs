@@ -1,24 +1,8 @@
-using System.Diagnostics;
-using System.Reflection;
-using Serilog;
-using Asp.Versioning;
-using Scalar.AspNetCore;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using HealthChecks.UI.Client;
-using Relatio.Customers.Infrastructure;
-using Relatio.Customers.Infrastructure.Data;
-using Relatio.Customers.Application;
-using Relatio.Identity.Infrastructure;
-using Relatio.Identity.Infrastructure.Data;
-using Relatio.Identity.Application;
-using Relatio.Identity.Infrastructure.Seeders;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Relatio.Infrastructure.Messaging;
-using Relatio.Shared.Infrastructure;
-using Relatio.Contacts.Infrastructure;
-using Relatio.Contacts.Application;
-using Relatio.Tasks.Infrastructure;
-using Relatio.Tasks.Application;
+using Relatio.Shared.Middleware;
+using Serilog;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -31,78 +15,17 @@ try
     builder.Host.UseSerilog((context, services, configuration) =>
         configuration.ReadFrom.Configuration(context.Configuration));
 
-    builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
-
-    builder.Services.AddControllers();
-
-    var versionString = builder.Configuration["ApiVersioning:DefaultVersion"]
-        ?? throw new InvalidOperationException("ApiVersioning:DefaultVersion is not configured.");
-    var versionParts = versionString.Split('.');
-    var defaultApiVersion = new ApiVersion(int.Parse(versionParts[0]), int.Parse(versionParts[1]));
-
-    builder.Services.AddApiVersioning(options =>
-    {
-        options.DefaultApiVersion = defaultApiVersion;
-        options.AssumeDefaultVersionWhenUnspecified = true;
-        options.ReportApiVersions = true;
-        options.ApiVersionReader = new HeaderApiVersionReader("api-version");
-    }).AddMvc();
-
-    builder.Services.AddProblemDetails();
-
-    builder.Services.AddOpenApi();
-
-    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-        ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-
-    builder.Services.AddHealthChecks()
-        .AddNpgSql(connectionString, name: "postgres", tags: ["db", "ready"])
-        .AddCheck("application", () => HealthCheckResult.Healthy(
-            data: new Dictionary<string, object>
-            {
-                ["version"] = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "unknown",
-                ["environment"] = builder.Environment.EnvironmentName,
-                ["uptime"] = (DateTime.UtcNow - Process.GetCurrentProcess().StartTime.ToUniversalTime()).ToString(@"dd\.hh\:mm\:ss")
-            }), tags: ["ready"]);
-
-    builder.Services.AddCustomersInfrastructure(builder.Configuration);
-    builder.Services.AddCustomersApplication();
-
-    builder.Services.AddIdentityInfrastructure(builder.Configuration);
-    builder.Services.AddIdentityApplication();
-
-    builder.Services.AddContactsInfrastructure(builder.Configuration);
-    builder.Services.AddContactsApplication();
-
-    builder.Services.AddTasksInfrastructure(builder.Configuration);
-    builder.Services.AddTasksApplication();
-
     builder.Services.Configure<RabbitMqConsumerSettings>(builder.Configuration.GetSection("RabbitMq"));
     builder.Services.AddHostedService<DealCreatedConsumer>();
 
+    builder.Services.AddHealthChecks()
+        .AddCheck("application", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy());
+
     var app = builder.Build();
 
-    Log.Information("Starting Relatio CRM application");
+    Log.Information("Messaging service - starting...");
 
-    if (app.Environment.IsDevelopment() ||
-        app.Configuration.GetValue<bool>("Identity:RunSeederOnStartup"))
-    {
-        using var scope = app.Services.CreateScope();
-        await IdentitySeeder.SeedAsync(scope.ServiceProvider);
-    }
-
-    app.UseExceptionHandler();
-    app.UseStatusCodePages();
-
-    app.UseHttpsRedirection();
-    app.UseAuthentication();
-    app.UseAuthorization();
-
-    if (app.Environment.IsDevelopment())
-    {
-        app.MapOpenApi();
-        app.MapScalarApiReference();
-    }
+    app.UseMiddleware<CorrelationIdMiddleware>();
 
     app.MapHealthChecks("/health/live", new HealthCheckOptions
     {
@@ -115,13 +38,11 @@ try
         ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
     });
 
-    app.MapControllers();
-
     app.Run();
 }
 catch (Exception ex)
 {
-    Log.Fatal(ex, "Application startup failed");
+    Log.Fatal(ex, "Messaging service - startup failed");
     throw;
 }
 finally
