@@ -2,12 +2,11 @@ using System.Diagnostics;
 using System.Reflection;
 using Asp.Versioning;
 using HealthChecks.UI.Client;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Microsoft.IdentityModel.Tokens;
 using Relatio.Sales.Application;
 using Relatio.Sales.Infrastructure;
+using Relatio.Shared.Extensions;
 using Relatio.Shared.Infrastructure;
 using Relatio.Shared.Middleware;
 using Scalar.AspNetCore;
@@ -44,30 +43,7 @@ try
     builder.Services.AddProblemDetails();
     builder.Services.AddOpenApi();
 
-    var jwtSecret = builder.Configuration["Jwt:Secret"]
-        ?? throw new InvalidOperationException("Jwt:Secret is not configured.");
-    var jwtIssuer = builder.Configuration["Jwt:Issuer"]
-        ?? throw new InvalidOperationException("Jwt:Issuer is not configured.");
-    var jwtAudience = builder.Configuration["Jwt:Audience"]
-        ?? throw new InvalidOperationException("Jwt:Audience is not configured.");
-
-    builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-        .AddJwtBearer(options =>
-        {
-            options.TokenValidationParameters = new TokenValidationParameters
-            {
-                ValidateIssuer = true,
-                ValidateAudience = true,
-                ValidateLifetime = true,
-                ValidateIssuerSigningKey = true,
-                ValidIssuer = jwtIssuer,
-                ValidAudience = jwtAudience,
-                IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(jwtSecret)),
-                ClockSkew = TimeSpan.Zero
-            };
-        });
-
-    builder.Services.AddAuthorization();
+    builder.Services.AddKeycloakAuthentication(builder.Configuration);
 
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
         ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
@@ -92,7 +68,6 @@ try
     app.UseMiddleware<CorrelationIdMiddleware>();
     app.UseExceptionHandler();
     app.UseStatusCodePages();
-    app.UseHttpsRedirection();
     app.UseAuthentication();
     app.UseAuthorization();
 
