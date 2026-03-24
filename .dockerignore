@@ -5,7 +5,7 @@ logs/
 .git/
 .vs/
 node_modules/
-ui/
+.ui/
 tests/
 *.md
 *.http

@@ -195,13 +195,13 @@ services:
 
   relatio-ui:
     build:
-      context: ./ui
+      context: ./.ui
       dockerfile: Dockerfile
     container_name: relatio_ui
     ports:
       - "5173:5173"
     volumes:
-      - ./ui:/app
+      - ./.ui:/app
       - /app/node_modules
     environment:
       API_TARGET: http://relatio-tasks:8080

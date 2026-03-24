@@ -422,6 +422,6 @@ appsettings.Development.json
 logs/
 TestResults/
 coverage/
-ui/.env.development
-ui/dist/
+.ui/.env.development
+.ui/dist/
 .idea/
