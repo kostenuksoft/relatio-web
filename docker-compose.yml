@@ -129,10 +129,17 @@ services:
         Username=${DB_USER};Password=${DB_PASSWORD}
       Keycloak__Authority: http://keycloak:8080/realms/relatio
       Keycloak__Audience: relatio-api
+      RabbitMq__Host: rabbitmq
+      RabbitMq__Port: "5672"
+      RabbitMq__Username: ${RABBITMQ_USER}
+      RabbitMq__Password: ${RABBITMQ_PASSWORD}
+      RabbitMq__VirtualHost: /
       Serilog__WriteTo__0__Name: Seq
       Serilog__WriteTo__0__Args__serverUrl: http://seq:5341
     depends_on:
       postgres:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
       keycloak:
         condition: service_started

@@ -3,7 +3,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Relatio.Contacts.Domain.Interfaces;
 using Relatio.Contacts.Infrastructure.Data;
+using Relatio.Contacts.Infrastructure.Messaging;
 using Relatio.Contacts.Infrastructure.Repositories;
+using Relatio.Contacts.Infrastructure.Settings;
 
 namespace Relatio.Contacts.Infrastructure;
 
@@ -21,6 +23,10 @@ public static class DependencyInjection
 
         services.AddScoped<IContactsUnitOfWork>(provider => provider.GetRequiredService<ContactsDbContext>());
         services.AddScoped<IContactRepository, ContactRepository>();
+
+        services.Configure<RabbitMqSettings>(configuration.GetSection("RabbitMq"));
+        services.AddSingleton<RabbitMqConnectionFactory>();
+        services.AddHostedService<DealCreatedConsumer>();
 
         return services;
     }
