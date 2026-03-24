@@ -49,7 +49,8 @@ public static class DependencyInjection
         .AddHttpMessageHandler<CorrelationIdDelegatingHandler>()
         .AddStandardResilienceHandler(options =>
         {
-            options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(8);
+            options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(30);
+            options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(8);
             options.Retry.MaxRetryAttempts = 3;
             options.Retry.Delay = TimeSpan.FromMilliseconds(300);
             options.Retry.UseJitter = true;
