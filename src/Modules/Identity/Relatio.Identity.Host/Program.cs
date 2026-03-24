@@ -73,7 +73,6 @@ try
     app.UseMiddleware<CorrelationIdMiddleware>();
     app.UseExceptionHandler();
     app.UseStatusCodePages();
-    app.UseHttpsRedirection();
     app.UseAuthentication();
     app.UseAuthorization();
 
