@@ -1,5 +1,5 @@
-bin/
-obj/
+**/bin/
+**/obj/
 logs/
 **/appsettings.Development.json
 .git/
