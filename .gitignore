@@ -424,3 +424,4 @@ TestResults/
 coverage/
 ui/.env.development
 ui/dist/
+.idea/
