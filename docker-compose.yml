@@ -67,6 +67,145 @@ services:
       postgres:
         condition: service_healthy
 
+  relatio-identity:
+    build:
+      context: .
+      dockerfile: infra/docker/identity.Dockerfile
+    container_name: relatio_identity
+    ports:
+      - "5212:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: >-
+        Host=postgres;Port=5432;Database=relatio;
+        Username=${DB_USER};Password=${DB_PASSWORD}
+      Jwt__Secret: ${JWT_SECRET}
+      Jwt__Issuer: ${JWT_ISSUER}
+      Jwt__Audience: ${JWT_AUDIENCE}
+      Identity__AdminEmail: ${IDENTITY_ADMIN_EMAIL}
+      Identity__AdminPassword: ${IDENTITY_ADMIN_PASSWORD}
+      Identity__RunSeederOnStartup: "true"
+      Serilog__WriteTo__0__Name: Seq
+      Serilog__WriteTo__0__Args__serverUrl: http://seq:5341
+    depends_on:
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_started
+
+  relatio-customers:
+    build:
+      context: .
+      dockerfile: infra/docker/customers.Dockerfile
+    container_name: relatio_customers
+    ports:
+      - "5211:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: >-
+        Host=postgres;Port=5432;Database=relatio;
+        Username=${DB_USER};Password=${DB_PASSWORD}
+      Keycloak__Authority: http://keycloak:8080/realms/relatio
+      Keycloak__Audience: relatio-api
+      Serilog__WriteTo__0__Name: Seq
+      Serilog__WriteTo__0__Args__serverUrl: http://seq:5341
+    depends_on:
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_started
+
+  relatio-contacts:
+    build:
+      context: .
+      dockerfile: infra/docker/contacts.Dockerfile
+    container_name: relatio_contacts
+    ports:
+      - "5213:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: >-
+        Host=postgres;Port=5432;Database=relatio;
+        Username=${DB_USER};Password=${DB_PASSWORD}
+      Keycloak__Authority: http://keycloak:8080/realms/relatio
+      Keycloak__Audience: relatio-api
+      Serilog__WriteTo__0__Name: Seq
+      Serilog__WriteTo__0__Args__serverUrl: http://seq:5341
+    depends_on:
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_started
+
+  relatio-sales:
+    build:
+      context: .
+      dockerfile: infra/docker/sales.Dockerfile
+    container_name: relatio_sales
+    ports:
+      - "5215:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: >-
+        Host=postgres;Port=5432;Database=relatio;
+        Username=${DB_USER};Password=${DB_PASSWORD}
+      Keycloak__Authority: http://keycloak:8080/realms/relatio
+      Keycloak__Audience: relatio-api
+      Keycloak__ServiceClientId: sales-service
+      Keycloak__ServiceClientSecret: ${KEYCLOAK_SALES_CLIENT_SECRET}
+      Services__CustomersBaseUrl: http://relatio-customers:8080
+      RabbitMq__Host: rabbitmq
+      RabbitMq__Port: "5672"
+      RabbitMq__Username: ${RABBITMQ_USER}
+      RabbitMq__Password: ${RABBITMQ_PASSWORD}
+      RabbitMq__VirtualHost: /
+      Serilog__WriteTo__0__Name: Seq
+      Serilog__WriteTo__0__Args__serverUrl: http://seq:5341
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      keycloak:
+        condition: service_started
+      relatio-customers:
+        condition: service_started
+
+  relatio-tasks:
+    build:
+      context: .
+      dockerfile: infra/docker/tasks.Dockerfile
+    container_name: relatio_tasks
+    ports:
+      - "5214:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: >-
+        Host=postgres;Port=5432;Database=relatio;
+        Username=${DB_USER};Password=${DB_PASSWORD}
+      Keycloak__Authority: http://keycloak:8080/realms/relatio
+      Keycloak__Audience: relatio-api
+      Serilog__WriteTo__0__Name: Seq
+      Serilog__WriteTo__0__Args__serverUrl: http://seq:5341
+    depends_on:
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_started
+
+  relatio-ui:
+    build:
+      context: ./ui
+      dockerfile: Dockerfile
+    container_name: relatio_ui
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./ui:/app
+      - /app/node_modules
+    environment:
+      API_TARGET: http://relatio-tasks:8080
+
 volumes:
   relatio_postgres_data:
   relatio_seq_data:

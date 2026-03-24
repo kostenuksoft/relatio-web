@@ -1,0 +1,11 @@
+bin/
+obj/
+logs/
+**/appsettings.Development.json
+.git/
+.vs/
+node_modules/
+ui/
+tests/
+*.md
+*.http

@@ -422,3 +422,5 @@ appsettings.Development.json
 logs/
 TestResults/
 coverage/
+ui/.env.development
+ui/dist/
