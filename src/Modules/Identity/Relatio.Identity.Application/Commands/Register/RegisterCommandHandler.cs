@@ -21,7 +21,10 @@ public sealed class RegisterCommandHandler : IRequestHandler<RegisterCommand, Er
             request.Username,
             request.Email,
             request.Password,
+            request.Position,
             UserRole.Viewer,
+            request.FirstName,
+            request.LastName,
             cancellationToken);
 
         if (result.IsError)

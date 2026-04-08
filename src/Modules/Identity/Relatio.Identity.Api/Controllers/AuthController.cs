@@ -27,7 +27,10 @@ public sealed class AuthController : ApiController
             request.Username,
             request.Email,
             request.Password,
-            request.ConfirmPassword);
+            request.ConfirmPassword,
+            request.Position,
+            request.FirstName,
+            request.LastName);
 
         var result = await Sender.Send(command, cancellationToken);
 

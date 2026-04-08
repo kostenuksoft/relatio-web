@@ -8,4 +8,7 @@ public sealed record RegisterCommand(
     string Username,
     string Email,
     string Password,
-    string ConfirmPassword) : IRequest<ErrorOr<UserResponse>>;
+    string ConfirmPassword,
+    string Position,
+    string? FirstName = null,
+    string? LastName = null) : IRequest<ErrorOr<UserResponse>>;

@@ -23,9 +23,9 @@ public sealed class RegisterCommandHandlerTests
     [Fact]
     public async Task Handle_WithValidCommand_ShouldReturnUserResponseAndPassViewerRole()
     {
-        var command = new RegisterCommand("testuser", "test@test.com", "Test1234@", "Test1234@");
+        var command = new RegisterCommand("testuser", "test@test.com", "Test1234@", "Test1234@", "Developer");
         var expectedPrincipal = new UserPrincipal(Guid.NewGuid(), "testuser", "test@test.com", "Viewer");
-        _userService.CreateAsync("testuser", "test@test.com", "Test1234@", UserRole.Viewer, Arg.Any<CancellationToken>())
+        _userService.CreateAsync("testuser", "test@test.com", "Test1234@", "Developer", UserRole.Viewer, null, null, Arg.Any<CancellationToken>())
             .Returns(expectedPrincipal);
 
         var result = await _handler.Handle(command, CancellationToken.None);
@@ -39,15 +39,18 @@ public sealed class RegisterCommandHandlerTests
             "testuser",
             "test@test.com",
             "Test1234@",
+            "Developer",
             UserRole.Viewer,
+            null,
+            null,
             Arg.Any<CancellationToken>());
     }
 
     [Fact]
     public async Task Handle_WhenUserAlreadyExists_ShouldReturnUserAlreadyExistsError()
     {
-        var command = new RegisterCommand("testuser", "test@test.com", "Test1234@", "Test1234@");
-        _userService.CreateAsync("testuser", "test@test.com", "Test1234@", UserRole.Viewer, Arg.Any<CancellationToken>())
+        var command = new RegisterCommand("testuser", "test@test.com", "Test1234@", "Test1234@", "Developer");
+        _userService.CreateAsync("testuser", "test@test.com", "Test1234@", "Developer", UserRole.Viewer, null, null, Arg.Any<CancellationToken>())
             .Returns(IdentityErrors.UserAlreadyExists);
 
         var result = await _handler.Handle(command, CancellationToken.None);
@@ -59,8 +62,8 @@ public sealed class RegisterCommandHandlerTests
     [Fact]
     public async Task Handle_WhenRegistrationFails_ShouldReturnRegistrationFailedError()
     {
-        var command = new RegisterCommand("testuser", "test@test.com", "Test1234@", "Test1234@");
-        _userService.CreateAsync("testuser", "test@test.com", "Test1234@", UserRole.Viewer, Arg.Any<CancellationToken>())
+        var command = new RegisterCommand("testuser", "test@test.com", "Test1234@", "Test1234@", "Developer");
+        _userService.CreateAsync("testuser", "test@test.com", "Test1234@", "Developer", UserRole.Viewer, null, null, Arg.Any<CancellationToken>())
             .Returns(IdentityErrors.RegistrationFailed("Weak password"));
 
         var result = await _handler.Handle(command, CancellationToken.None);

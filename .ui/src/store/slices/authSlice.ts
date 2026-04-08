@@ -6,8 +6,8 @@ interface AuthState {
 }
 
 const initialState: AuthState = {
-  token: null,
-  refreshToken: null,
+  token: localStorage.getItem('accessToken'),
+  refreshToken: localStorage.getItem('refreshToken'),
 }
 
 export const authSlice = createSlice({
@@ -20,10 +20,14 @@ export const authSlice = createSlice({
     ) => {
       state.token = action.payload.token
       state.refreshToken = action.payload.refreshToken
+      localStorage.setItem('accessToken', action.payload.token)
+      localStorage.setItem('refreshToken', action.payload.refreshToken)
     },
     clearCredentials: (state) => {
       state.token = null
       state.refreshToken = null
+      localStorage.removeItem('accessToken')
+      localStorage.removeItem('refreshToken')
     },
   },
 })

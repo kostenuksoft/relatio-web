@@ -10,8 +10,10 @@ export const baseApi = createApi({
       if (token) {
         headers.set('Authorization', `Bearer ${token}`)
       }
+      headers.set('api-version', '1.0')
       return headers
     },
   }),
+  tagTypes: ['Customer', 'Contact', 'Deal'],
   endpoints: () => ({}),
 })

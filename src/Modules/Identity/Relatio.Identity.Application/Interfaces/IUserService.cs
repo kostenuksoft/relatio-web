@@ -10,7 +10,10 @@ public interface IUserService
         string username,
         string email,
         string password,
+        string position,
         UserRole role,
+        string? firstName = null,
+        string? lastName = null,
         CancellationToken cancellationToken = default);
 
     Task<ErrorOr<UserPrincipal>> ValidateCredentialsAsync(

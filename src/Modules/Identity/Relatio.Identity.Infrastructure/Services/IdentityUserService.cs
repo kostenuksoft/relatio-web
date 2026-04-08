@@ -21,14 +21,20 @@ public sealed class IdentityUserService : IUserService
         string username,
         string email,
         string password,
+        string position,
         UserRole role,
+        string? firstName = null,
+        string? lastName = null,
         CancellationToken cancellationToken = default)
     {
         var user = new ApplicationUser
         {
             UserName = username,
             Email = email,
-            EmailConfirmed = true
+            EmailConfirmed = true,
+            Position = position,
+            FirstName = firstName,
+            LastName = lastName
         };
 
         var result = await _userManager.CreateAsync(user, password);

@@ -28,5 +28,9 @@ public sealed class RegisterCommandValidator : AbstractValidator<RegisterCommand
         RuleFor(x => x.ConfirmPassword)
             .NotEmpty().WithMessage("Confirm password is required.")
             .Equal(x => x.Password).WithMessage("Passwords do not match.");
+
+        RuleFor(x => x.Position)
+            .NotEmpty().WithMessage("Position is required.")
+            .MaximumLength(100).WithMessage("Position must not exceed 100 characters.");
     }
 }
