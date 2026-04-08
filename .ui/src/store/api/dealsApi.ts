@@ -32,7 +32,11 @@ export const dealsApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['Deal'],
     }),
+    deleteDeal: builder.mutation<void, string>({
+      query: (id) => ({ url: `/deals/${id}`, method: 'DELETE' }),
+      invalidatesTags: ['Deal'],
+    }),
   }),
 })
 
-export const { useGetDealsQuery, useCreateDealMutation } = dealsApi
+export const { useGetDealsQuery, useCreateDealMutation, useDeleteDealMutation } = dealsApi

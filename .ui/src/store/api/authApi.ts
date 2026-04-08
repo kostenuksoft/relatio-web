@@ -11,6 +11,16 @@ interface LoginResponse {
   expiresAt: string
 }
 
+interface RegisterRequest {
+  username: string
+  email: string
+  password: string
+  confirmPassword: string
+  position: string
+  firstName?: string
+  lastName?: string
+}
+
 export const authApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     login: builder.mutation<LoginResponse, LoginRequest>({
@@ -20,7 +30,14 @@ export const authApi = baseApi.injectEndpoints({
         body,
       }),
     }),
+    register: builder.mutation<void, RegisterRequest>({
+      query: (body) => ({
+        url: '/auth/register',
+        method: 'POST',
+        body,
+      }),
+    }),
   }),
 })
 
-export const { useLoginMutation } = authApi
+export const { useLoginMutation, useRegisterMutation } = authApi

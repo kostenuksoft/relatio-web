@@ -1,15 +1,38 @@
 import { type FormEvent, useState } from 'react'
-import { useGetCustomersQuery, useCreateCustomerMutation } from '../store/api/customersApi'
+import { useGetCustomersQuery, useCreateCustomerMutation, useDeleteCustomerMutation } from '../store/api/customersApi'
 import { Modal } from '../components/Modal'
+import { Field } from '@/components/ui/field'
+import { parseApiError } from '@/lib/errors'
 
-const STATUS_COLORS: Record<string, string> = {
-  Prospect: 'bg-yellow-100 text-yellow-800',
-  Active: 'bg-green-100 text-green-800',
-  Inactive: 'bg-gray-100 text-gray-600',
+const fi = 'w-full bg-transparent text-sm text-text py-1 focus:outline-none placeholder:text-white/20'
+
+function StatusDot({ status }: { status: string }) {
+  const map: Record<string, [string, string]> = {
+    Prospect: ['bg-amber-400',   'text-amber-400'],
+    Active:   ['bg-emerald-400', 'text-emerald-300'],
+    Inactive: ['bg-zinc-500',    'text-zinc-400'],
+  }
+  const colors = map[status]
+  const dot  = colors?.[0] ?? 'bg-zinc-500'
+  const text = colors?.[1] ?? 'text-zinc-400'
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${dot}`} />
+      <span className={`text-xs font-medium ${text}`}>{status}</span>
+    </span>
+  )
 }
 
-const inputCls =
-  'w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
+function TrashIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="3 6 5 6 21 6" />
+      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+      <path d="M10 11v6" /><path d="M14 11v6" />
+      <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+    </svg>
+  )
+}
 
 export function CustomersPage() {
   const [page, setPage] = useState(1)
@@ -21,6 +44,9 @@ export function CustomersPage() {
 
   const { data, isLoading, isFetching } = useGetCustomersQuery({ page, pageSize: 20 })
   const [createCustomer, { isLoading: isCreating, error: createError }] = useCreateCustomerMutation()
+  const [deleteCustomer] = useDeleteCustomerMutation()
+
+  const { general: createGeneral, fields: createFields } = parseApiError(createError)
 
   function resetForm() {
     setName(''); setEmail(''); setPhone(''); setIndustry('')
@@ -30,8 +56,7 @@ export function CustomersPage() {
     e.preventDefault()
     try {
       await createCustomer({
-        name,
-        email,
+        name, email,
         ...(phone ? { phone } : {}),
         ...(industry ? { industry } : {}),
       }).unwrap()
@@ -40,56 +65,66 @@ export function CustomersPage() {
     } catch { /* shown via createError */ }
   }
 
+  async function handleDelete(id: string, customerName: string) {
+    if (!window.confirm(`Delete "${customerName}"? This cannot be undone.`)) return
+    await deleteCustomer(id)
+  }
+
   return (
     <div className="p-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Customers</h1>
-          {data && (
-            <p className="text-sm text-gray-500 mt-0.5">{data.totalCount} total</p>
-          )}
+          <h1 className="font-code font-bold text-2xl text-text">Customers</h1>
+          {data && <p className="text-sm text-muted-foreground mt-0.5">{data.totalCount} total</p>}
         </div>
         <button
           onClick={() => setShowModal(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+          className="bg-white hover:bg-white/90 text-black text-sm font-medium px-4 py-2 transition-colors cursor-pointer"
         >
           + New Customer
         </button>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <div className="bg-surface border border-white/7 overflow-hidden">
         {isLoading ? (
-          <div className="p-12 text-center text-gray-400">Loading…</div>
+          <div className="p-12 text-center text-muted-foreground">Loading…</div>
         ) : (
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="bg-raised">
               <tr>
-                {['Name', 'Email', 'Phone', 'Industry', 'Status', 'Created'].map((h) => (
-                  <th key={h} className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                {['Name', 'Email', 'Phone', 'Industry', 'Status', 'Created', 'Actions'].map((h) => (
+                  <th key={h} className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     {h}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody>
               {data?.items.map((c) => (
-                <tr key={c.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium text-gray-900">{c.name}</td>
-                  <td className="px-4 py-3 text-gray-600">{c.email}</td>
-                  <td className="px-4 py-3 text-gray-500">{c.phone ?? '—'}</td>
-                  <td className="px-4 py-3 text-gray-500">{c.industry ?? '—'}</td>
-                  <td className="px-4 py-3">
-                    <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[c.status] ?? 'bg-gray-100 text-gray-600'}`}>
-                      {c.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-gray-400">
+                <tr key={c.id} className="border-t border-white/5 hover:bg-white/[0.03] transition-colors">
+                  <td className="px-4 py-3 font-medium text-text">{c.name}</td>
+                  <td className="px-4 py-3 text-muted-foreground">{c.email}</td>
+                  <td className="px-4 py-3 text-muted-foreground">{c.phone ?? '—'}</td>
+                  <td className="px-4 py-3 text-muted-foreground">{c.industry ?? '—'}</td>
+                  <td className="px-4 py-3"><StatusDot status={c.status} /></td>
+                  <td className="px-4 py-3 font-code text-xs text-muted-foreground/60">
                     {new Date(c.createdAt).toLocaleDateString()}
+                  </td>
+                  <td className="px-4 py-3">
+                    <button
+                      onClick={() => handleDelete(c.id, c.name)}
+                      className="text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
+                      title="Delete customer"
+                    >
+                      <TrashIcon />
+                    </button>
                   </td>
                 </tr>
               ))}
               {data?.items.length === 0 && (
-                <tr><td colSpan={6} className="px-4 py-10 text-center text-gray-400">No customers yet</td></tr>
+                <tr>
+                  <td colSpan={7} className="px-4 py-10 text-center text-muted-foreground">No customers yet</td>
+                </tr>
               )}
             </tbody>
           </table>
@@ -98,19 +133,13 @@ export function CustomersPage() {
 
       {data && data.totalPages > 1 && (
         <div className="flex items-center justify-between mt-4">
-          <button
-            disabled={!data.hasPreviousPage || isFetching}
-            onClick={() => setPage((p) => p - 1)}
-            className="text-sm px-3 py-1.5 border border-gray-300 rounded-lg disabled:opacity-40 hover:bg-gray-50"
-          >
+          <button disabled={!data.hasPreviousPage || isFetching} onClick={() => setPage((p) => p - 1)}
+            className="text-sm px-3 py-1.5 border border-white/10 text-muted-foreground hover:bg-white/5 hover:text-text disabled:opacity-30 cursor-pointer transition-colors">
             ← Previous
           </button>
-          <span className="text-sm text-gray-500">Page {data.page} of {data.totalPages}</span>
-          <button
-            disabled={!data.hasNextPage || isFetching}
-            onClick={() => setPage((p) => p + 1)}
-            className="text-sm px-3 py-1.5 border border-gray-300 rounded-lg disabled:opacity-40 hover:bg-gray-50"
-          >
+          <span className="text-sm text-muted-foreground">Page {data.page} of {data.totalPages}</span>
+          <button disabled={!data.hasNextPage || isFetching} onClick={() => setPage((p) => p + 1)}
+            className="text-sm px-3 py-1.5 border border-white/10 text-muted-foreground hover:bg-white/5 hover:text-text disabled:opacity-30 cursor-pointer transition-colors">
             Next →
           </button>
         </div>
@@ -119,32 +148,28 @@ export function CustomersPage() {
       {showModal && (
         <Modal title="New Customer" onClose={() => { setShowModal(false); resetForm() }}>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
-              <input value={name} onChange={(e) => setName(e.target.value)} required className={inputCls} />
+            <Field label="Name *" error={createFields['name']}>
+              <input value={name} onChange={(e) => setName(e.target.value)} required className={fi} placeholder="Acme Corp" />
+            </Field>
+            <Field label="Email *" error={createFields['email']}>
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className={fi} placeholder="contact@acme.com" />
+            </Field>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Phone" error={createFields['phone'] ?? createFields['phonenumber']}>
+                <input value={phone} onChange={(e) => setPhone(e.target.value)} className={fi} placeholder="+380..." />
+              </Field>
+              <Field label="Industry" error={createFields['industry']}>
+                <input value={industry} onChange={(e) => setIndustry(e.target.value)} className={fi} placeholder="Technology" />
+              </Field>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className={inputCls} />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-              <input value={phone} onChange={(e) => setPhone(e.target.value)} className={inputCls} placeholder="+380..." />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Industry</label>
-              <input value={industry} onChange={(e) => setIndustry(e.target.value)} className={inputCls} placeholder="Technology" />
-            </div>
-            {createError && (
-              <p className="text-sm text-red-600">Failed to create customer</p>
-            )}
-            <div className="flex justify-end gap-3 pt-2">
+            {createGeneral && <p className="text-xs text-destructive">{createGeneral}</p>}
+            <div className="flex justify-end gap-3 pt-1">
               <button type="button" onClick={() => { setShowModal(false); resetForm() }}
-                className="text-sm px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                className="text-sm px-4 py-2 border border-white/10 text-muted-foreground hover:text-text hover:bg-white/5 cursor-pointer transition-colors">
                 Cancel
               </button>
               <button type="submit" disabled={isCreating}
-                className="text-sm px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg">
+                className="text-sm px-4 py-2 bg-white hover:bg-white/90 disabled:opacity-40 text-black cursor-pointer transition-colors">
                 {isCreating ? 'Creating…' : 'Create'}
               </button>
             </div>

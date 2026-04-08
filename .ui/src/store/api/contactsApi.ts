@@ -32,7 +32,11 @@ export const contactsApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['Contact'],
     }),
+    deleteContact: builder.mutation<void, string>({
+      query: (id) => ({ url: `/contacts/${id}`, method: 'DELETE' }),
+      invalidatesTags: ['Contact'],
+    }),
   }),
 })
 
-export const { useGetContactsQuery, useCreateContactMutation } = contactsApi
+export const { useGetContactsQuery, useCreateContactMutation, useDeleteContactMutation } = contactsApi

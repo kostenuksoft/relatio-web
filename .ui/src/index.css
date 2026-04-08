@@ -1,1 +1,60 @@
 @import "tailwindcss";
+
+@theme {
+  /* ── Radius: 0 everywhere (squared design) ── */
+  --radius:    0px;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
+  --radius-3xl: 0px;
+
+  /* ── Monochrome UI tokens ── */
+  --color-background:           #080808;
+  --color-foreground:           #F0F0F0;
+  --color-card:                 #101010;
+  --color-card-foreground:      #F0F0F0;
+  --color-primary:              #FFFFFF;
+  --color-primary-foreground:   #000000;
+  --color-secondary:            #1C1C1C;
+  --color-secondary-foreground: #F0F0F0;
+  --color-muted:                #1C1C1C;
+  --color-muted-foreground:     #575757;
+  --color-destructive:          #EF4444;
+  --color-destructive-foreground: #FFFFFF;
+  --color-border:               rgba(255,255,255,0.10);
+  --color-input:                #1C1C1C;
+  --color-ring:                 #888888;
+
+  /* ── Project aliases (backward compat) ── */
+  --color-bg:      #080808;
+  --color-surface: #101010;
+  --color-raised:  #1C1C1C;
+  --color-text:    #F0F0F0;
+  --color-danger:  #EF4444;
+  --color-success: #10B981;
+  --color-accent:  #F97316; /* kept for data viz (deal amounts, stage dots) */
+
+  /* ── Fonts ── */
+  --font-code: 'Fira Code', monospace;
+  --font-body: 'Fira Sans', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+@layer base {
+  fieldset { min-width: 0; margin: 0; }
+}
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--color-surface); }
+::-webkit-scrollbar-thumb { background: #2A2A2A; border-radius: 0; }
+::-webkit-scrollbar-thumb:hover { background: #333; }

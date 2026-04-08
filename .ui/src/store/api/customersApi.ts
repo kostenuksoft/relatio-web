@@ -31,7 +31,11 @@ export const customersApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['Customer'],
     }),
+    deleteCustomer: builder.mutation<void, string>({
+      query: (id) => ({ url: `/customers/${id}`, method: 'DELETE' }),
+      invalidatesTags: ['Customer'],
+    }),
   }),
 })
 
-export const { useGetCustomersQuery, useCreateCustomerMutation } = customersApi
+export const { useGetCustomersQuery, useCreateCustomerMutation, useDeleteCustomerMutation } = customersApi

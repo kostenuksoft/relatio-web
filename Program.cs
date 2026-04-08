@@ -12,7 +12,7 @@ try
 {
     var builder = WebApplication.CreateBuilder(args);
 
-    builder.Host.UseSerilog((context, services, configuration) =>
+    builder.Host.UseSerilog((context, _, configuration) =>
         configuration.ReadFrom.Configuration(context.Configuration));
 
     builder.Services.Configure<RabbitMqConsumerSettings>(builder.Configuration.GetSection("RabbitMq"));
