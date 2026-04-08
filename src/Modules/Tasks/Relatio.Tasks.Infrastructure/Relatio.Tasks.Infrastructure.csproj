@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Relatio.Tasks.Domain\Relatio.Tasks.Domain.csproj" />
+    <ProjectReference Include="..\Relatio.Tasks.Application\Relatio.Tasks.Application.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -11,9 +12,11 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.3" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.5" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.3" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.3" />
+    <PackageReference Include="RabbitMQ.Client" Version="7.2.1" />
   </ItemGroup>
 
   <PropertyGroup>

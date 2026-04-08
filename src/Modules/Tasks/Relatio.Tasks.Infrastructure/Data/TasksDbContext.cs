@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Relatio.Tasks.Domain.Entities;
 using Relatio.Tasks.Domain.Interfaces;
+using Relatio.Tasks.Infrastructure.Outbox;
 
 namespace Relatio.Tasks.Infrastructure.Data;
 
@@ -14,6 +15,7 @@ public sealed class TasksDbContext : DbContext, ITasksUnitOfWork
     }
 
     public DbSet<CrmTask> Tasks => Set<CrmTask>();
+    public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
