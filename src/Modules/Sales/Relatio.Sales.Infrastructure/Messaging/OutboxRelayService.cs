@@ -86,6 +86,87 @@ public sealed class OutboxRelayService : BackgroundService
                 routingKey: _settings.DealCreatedRoutingKey,
                 cancellationToken: cancellationToken);
 
+            await channel.QueueDeclareAsync(
+                queue: _settings.DealStageChangedDlqQueue,
+                durable: true,
+                exclusive: false,
+                autoDelete: false,
+                cancellationToken: cancellationToken);
+
+            var stageChangedQueueArgs = new Dictionary<string, object?>
+            {
+                { "x-dead-letter-exchange", "" },
+                { "x-dead-letter-routing-key", _settings.DealStageChangedDlqQueue }
+            };
+
+            await channel.QueueDeclareAsync(
+                queue: _settings.DealStageChangedQueue,
+                durable: true,
+                exclusive: false,
+                autoDelete: false,
+                arguments: stageChangedQueueArgs,
+                cancellationToken: cancellationToken);
+
+            await channel.QueueBindAsync(
+                queue: _settings.DealStageChangedQueue,
+                exchange: _settings.ExchangeName,
+                routingKey: _settings.DealStageChangedRoutingKey,
+                cancellationToken: cancellationToken);
+
+            await channel.QueueDeclareAsync(
+                queue: _settings.DealOnboardingTaskCreatedDlqQueue,
+                durable: true,
+                exclusive: false,
+                autoDelete: false,
+                cancellationToken: cancellationToken);
+
+            var onboardingCreatedQueueArgs = new Dictionary<string, object?>
+            {
+                { "x-dead-letter-exchange", "" },
+                { "x-dead-letter-routing-key", _settings.DealOnboardingTaskCreatedDlqQueue }
+            };
+
+            await channel.QueueDeclareAsync(
+                queue: _settings.DealOnboardingTaskCreatedQueue,
+                durable: true,
+                exclusive: false,
+                autoDelete: false,
+                arguments: onboardingCreatedQueueArgs,
+                cancellationToken: cancellationToken);
+
+            await channel.QueueDeclareAsync(
+                queue: _settings.DealOnboardingTaskFailedDlqQueue,
+                durable: true,
+                exclusive: false,
+                autoDelete: false,
+                cancellationToken: cancellationToken);
+
+            var onboardingFailedQueueArgs = new Dictionary<string, object?>
+            {
+                { "x-dead-letter-exchange", "" },
+                { "x-dead-letter-routing-key", _settings.DealOnboardingTaskFailedDlqQueue }
+            };
+
+            await channel.QueueDeclareAsync(
+                queue: _settings.DealOnboardingTaskFailedQueue,
+                durable: true,
+                exclusive: false,
+                autoDelete: false,
+                arguments: onboardingFailedQueueArgs,
+                cancellationToken: cancellationToken);
+
+            await channel.QueueBindAsync(
+                queue: _settings.DealOnboardingTaskCreatedQueue,
+                exchange: _settings.ExchangeName,
+                routingKey: "task.onboarding.created",
+                cancellationToken: cancellationToken);
+
+            await channel.QueueBindAsync(
+                queue: _settings.DealOnboardingTaskFailedQueue,
+                exchange: _settings.ExchangeName,
+                routingKey: "task.onboarding.failed",
+                cancellationToken: cancellationToken);
+
             _logger.LogInformation("RabbitMQ topology declared successfully");
         }
         catch (Exception ex)
@@ -147,9 +228,16 @@ public sealed class OutboxRelayService : BackgroundService
 
                 var body = Encoding.UTF8.GetBytes(message.Payload);
 
+                var routingKey = message.EventType switch
+                {
+                    "deal.created" => _settings.DealCreatedRoutingKey,
+                    "deal.stage.changed" => _settings.DealStageChangedRoutingKey,
+                    _ => _settings.DealCreatedRoutingKey
+                };
+
                 await channel.BasicPublishAsync(
                     exchange: _settings.ExchangeName,
-                    routingKey: _settings.DealCreatedRoutingKey,
+                    routingKey: routingKey,
                     mandatory: false,
                     basicProperties: properties,
                     body: body,

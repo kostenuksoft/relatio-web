@@ -11,4 +11,11 @@ public sealed class RabbitMqSettings
     public string DealCreatedQueue { get; init; } = string.Empty;
     public string DealCreatedDlqQueue { get; init; } = string.Empty;
     public string DealCreatedRoutingKey { get; init; } = string.Empty;
+    public string DealStageChangedQueue { get; init; } = string.Empty;
+    public string DealStageChangedDlqQueue { get; init; } = string.Empty;
+    public string DealStageChangedRoutingKey { get; init; } = string.Empty;
+    public string DealOnboardingTaskCreatedQueue { get; init; } = string.Empty;
+    public string DealOnboardingTaskCreatedDlqQueue { get; init; } = string.Empty;
+    public string DealOnboardingTaskFailedQueue { get; init; } = string.Empty;
+    public string DealOnboardingTaskFailedDlqQueue { get; init; } = string.Empty;
 }

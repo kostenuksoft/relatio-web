@@ -93,6 +93,12 @@ public sealed class Deal : BaseEntity, ISoftDeletable
         return Result.Success;
     }
 
+    public void CompensateSaga(DealStage revertTo)
+    {
+        Stage = revertTo;
+        SetUpdatedAt();
+    }
+
     public ErrorOr<Success> Delete()
     {
         if (IsDeleted)

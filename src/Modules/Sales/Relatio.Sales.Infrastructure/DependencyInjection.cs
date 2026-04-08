@@ -31,6 +31,7 @@ public static class DependencyInjection
         services.Configure<RabbitMqSettings>(configuration.GetSection("RabbitMq"));
         services.AddSingleton<RabbitMqConnectionFactory>();
         services.AddHostedService<OutboxRelayService>();
+        services.AddHostedService<DealSagaConsumer>();
 
         services.Configure<KeycloakClientSettings>(configuration.GetSection("Keycloak"));
         services.AddHttpClient("keycloak-token");
