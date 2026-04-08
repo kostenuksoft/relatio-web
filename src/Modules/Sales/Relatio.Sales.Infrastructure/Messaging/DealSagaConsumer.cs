@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
-using Relatio.Sales.Application.Commands.ChangeDealStage;
+using Relatio.Sales.Application.Commands.CompensateSaga;
 using Relatio.Sales.Infrastructure.Settings;
 
 namespace Relatio.Sales.Infrastructure.Messaging;
@@ -109,7 +109,7 @@ public sealed class DealSagaConsumer : BackgroundService
                 await using var scope = _scopeFactory.CreateAsyncScope();
                 var sender = scope.ServiceProvider.GetRequiredService<ISender>();
 
-                var compensateResult = await sender.Send(new ChangeDealStageCommand(message.DealId, "Negotiation"), cancellationToken);
+                var compensateResult = await sender.Send(new CompensateSagaCommand(message.DealId), cancellationToken);
 
                 if (compensateResult.IsError)
                 {
