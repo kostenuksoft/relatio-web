@@ -85,8 +85,6 @@ services:
       Identity__AdminEmail: ${IDENTITY_ADMIN_EMAIL}
       Identity__AdminPassword: ${IDENTITY_ADMIN_PASSWORD}
       Identity__RunSeederOnStartup: "true"
-      Serilog__WriteTo__0__Name: Seq
-      Serilog__WriteTo__0__Args__serverUrl: http://seq:5341
     depends_on:
       postgres:
         condition: service_healthy
@@ -105,10 +103,11 @@ services:
       ConnectionStrings__DefaultConnection: >-
         Host=postgres;Port=5432;Database=relatio;
         Username=${DB_USER};Password=${DB_PASSWORD}
+      Jwt__Secret: ${JWT_SECRET}
+      Jwt__Issuer: ${JWT_ISSUER}
+      Jwt__Audience: ${JWT_AUDIENCE}
       Keycloak__Authority: http://keycloak:8080/realms/relatio
       Keycloak__Audience: relatio-api
-      Serilog__WriteTo__0__Name: Seq
-      Serilog__WriteTo__0__Args__serverUrl: http://seq:5341
     depends_on:
       postgres:
         condition: service_healthy
@@ -127,6 +126,9 @@ services:
       ConnectionStrings__DefaultConnection: >-
         Host=postgres;Port=5432;Database=relatio;
         Username=${DB_USER};Password=${DB_PASSWORD}
+      Jwt__Secret: ${JWT_SECRET}
+      Jwt__Issuer: ${JWT_ISSUER}
+      Jwt__Audience: ${JWT_AUDIENCE}
       Keycloak__Authority: http://keycloak:8080/realms/relatio
       Keycloak__Audience: relatio-api
       RabbitMq__Host: rabbitmq
@@ -134,8 +136,6 @@ services:
       RabbitMq__Username: ${RABBITMQ_USER}
       RabbitMq__Password: ${RABBITMQ_PASSWORD}
       RabbitMq__VirtualHost: /
-      Serilog__WriteTo__0__Name: Seq
-      Serilog__WriteTo__0__Args__serverUrl: http://seq:5341
     depends_on:
       postgres:
         condition: service_healthy
@@ -156,6 +156,9 @@ services:
       ConnectionStrings__DefaultConnection: >-
         Host=postgres;Port=5432;Database=relatio;
         Username=${DB_USER};Password=${DB_PASSWORD}
+      Jwt__Secret: ${JWT_SECRET}
+      Jwt__Issuer: ${JWT_ISSUER}
+      Jwt__Audience: ${JWT_AUDIENCE}
       Keycloak__Authority: http://keycloak:8080/realms/relatio
       Keycloak__Audience: relatio-api
       Keycloak__ServiceClientId: sales-service
@@ -166,8 +169,6 @@ services:
       RabbitMq__Username: ${RABBITMQ_USER}
       RabbitMq__Password: ${RABBITMQ_PASSWORD}
       RabbitMq__VirtualHost: /
-      Serilog__WriteTo__0__Name: Seq
-      Serilog__WriteTo__0__Args__serverUrl: http://seq:5341
     depends_on:
       postgres:
         condition: service_healthy
@@ -190,14 +191,48 @@ services:
       ConnectionStrings__DefaultConnection: >-
         Host=postgres;Port=5432;Database=relatio;
         Username=${DB_USER};Password=${DB_PASSWORD}
+      Jwt__Secret: ${JWT_SECRET}
+      Jwt__Issuer: ${JWT_ISSUER}
+      Jwt__Audience: ${JWT_AUDIENCE}
       Keycloak__Authority: http://keycloak:8080/realms/relatio
       Keycloak__Audience: relatio-api
-      Serilog__WriteTo__0__Name: Seq
-      Serilog__WriteTo__0__Args__serverUrl: http://seq:5341
+      RabbitMq__Host: rabbitmq
+      RabbitMq__Port: "5672"
+      RabbitMq__Username: ${RABBITMQ_USER}
+      RabbitMq__Password: ${RABBITMQ_PASSWORD}
+      RabbitMq__VirtualHost: /
     depends_on:
       postgres:
         condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
       keycloak:
+        condition: service_started
+
+  relatio-gateway:
+    build:
+      context: .
+      dockerfile: infra/docker/gateway.Dockerfile
+    container_name: relatio_gateway
+    ports:
+      - "5200:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      Services__Identity: http://relatio-identity:8080
+      Services__Customers: http://relatio-customers:8080
+      Services__Contacts: http://relatio-contacts:8080
+      Services__Sales: http://relatio-sales:8080
+      Services__Tasks: http://relatio-tasks:8080
+    depends_on:
+      relatio-identity:
+        condition: service_started
+      relatio-customers:
+        condition: service_started
+      relatio-contacts:
+        condition: service_started
+      relatio-sales:
+        condition: service_started
+      relatio-tasks:
         condition: service_started
 
   relatio-ui:
@@ -211,7 +246,10 @@ services:
       - ./.ui:/app
       - /app/node_modules
     environment:
-      API_TARGET: http://relatio-tasks:8080
+      IDENTITY_URL: http://relatio-identity:8080
+      CUSTOMERS_URL: http://relatio-customers:8080
+      CONTACTS_URL: http://relatio-contacts:8080
+      SALES_URL: http://relatio-sales:8080
 
 volumes:
   relatio_postgres_data:
