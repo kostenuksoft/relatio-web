@@ -2,42 +2,262 @@
   "title": "Relatio Gateway",
   "uid": "relatio-gateway",
   "schemaVersion": 38,
-  "refresh": "5s",
+  "refresh": "2s",
   "time": { "from": "now-5m", "to": "now" },
+  "templating": {
+    "list": [
+      {
+        "name": "status_class",
+        "label": "Status Class",
+        "type": "custom",
+        "query": "All : .*,2xx : 2..,3xx : 3..,4xx : 4..,5xx : 5..",
+        "current": { "text": "All", "value": ".*" },
+        "options": [
+          { "text": "All", "value": ".*",  "selected": true  },
+          { "text": "2xx", "value": "2..", "selected": false },
+          { "text": "3xx", "value": "3..", "selected": false },
+          { "text": "4xx", "value": "4..", "selected": false },
+          { "text": "5xx", "value": "5..", "selected": false }
+        ],
+        "multi": false,
+        "includeAll": false,
+        "hide": 0
+      },
+      {
+        "name": "status_code",
+        "label": "Code",
+        "type": "query",
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "definition": "label_values(http_request_duration_seconds_count{job=\"relatio-gateway\",code=~\"$status_class\"}, code)",
+        "query": {
+          "query": "label_values(http_request_duration_seconds_count{job=\"relatio-gateway\",code=~\"$status_class\"}, code)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "current": {},
+        "hide": 0
+      }
+    ]
+  },
   "panels": [
     {
       "id": 1,
-      "title": "Throughput (req/s)",
+      "title": "Throughput (req/min)",
       "type": "timeseries",
       "gridPos": { "x": 0, "y": 0, "w": 8, "h": 8 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqpm",
+          "color": { "mode": "fixed", "fixedColor": "green" },
+          "custom": { "lineWidth": 2, "fillOpacity": 10 }
+        }
+      },
       "targets": [
         {
-          "expr": "sum(rate(http_request_duration_seconds_count{job=\"relatio-gateway\"}[1m]))",
-          "legendFormat": "requests/s"
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "sum(rate(http_request_duration_seconds_count{job=\"relatio-gateway\"}[1m])) * 60",
+          "legendFormat": "req/min"
         }
       ]
     },
     {
       "id": 2,
-      "title": "Error Rate (%)",
+      "title": "Latency p50 / p95 / p99 (s)",
       "type": "timeseries",
       "gridPos": { "x": 8, "y": 0, "w": 8, "h": 8 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": { "lineWidth": 2, "fillOpacity": 0 }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "p99" },
+            "properties": [
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "p95" },
+            "properties": [
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "light-blue" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "p50" },
+            "properties": [
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "blue" } }
+            ]
+          }
+        ]
+      },
       "targets": [
         {
-          "expr": "100 * sum(rate(http_request_duration_seconds_count{job=\"relatio-gateway\",code=~\"4..|5..\"}[1m])) / sum(rate(http_request_duration_seconds_count{job=\"relatio-gateway\"}[1m]))",
-          "legendFormat": "error %"
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{job=\"relatio-gateway\"}[1m])) by (le))",
+          "legendFormat": "p99"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job=\"relatio-gateway\"}[1m])) by (le))",
+          "legendFormat": "p95"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "histogram_quantile(0.50, sum(rate(http_request_duration_seconds_bucket{job=\"relatio-gateway\"}[1m])) by (le))",
+          "legendFormat": "p50"
         }
       ]
     },
     {
       "id": 3,
-      "title": "Latency p95 (s)",
+      "title": "4xx + 5xx Rate (% of total)",
       "type": "timeseries",
       "gridPos": { "x": 16, "y": 0, "w": 8, "h": 8 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "custom": { "lineWidth": 2, "fillOpacity": 10 }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "4xx %" },
+            "properties": [
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "orange" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "5xx %" },
+            "properties": [
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } }
+            ]
+          }
+        ]
+      },
       "targets": [
         {
-          "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job=\"relatio-gateway\"}[1m])) by (le))",
-          "legendFormat": "p95"
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "100 * (sum(rate(http_request_duration_seconds_count{job=\"relatio-gateway\",code=~\"4..\"}[1m])) or vector(0)) / sum(rate(http_request_duration_seconds_count{job=\"relatio-gateway\"}[1m]))",
+          "legendFormat": "4xx %"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "100 * (sum(rate(http_request_duration_seconds_count{job=\"relatio-gateway\",code=~\"5..\"}[1m])) or vector(0)) / sum(rate(http_request_duration_seconds_count{job=\"relatio-gateway\"}[1m]))",
+          "legendFormat": "5xx %"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Requests by Status Code (req/min)",
+      "description": "Filter by Status Class + Code dropdowns above",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 8, "w": 24, "h": 10 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqpm",
+          "custom": { "lineWidth": 2, "fillOpacity": 5 }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byRegexp", "options": "^2.*" },
+            "properties": [
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "green" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byRegexp", "options": "^3.*" },
+            "properties": [
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "blue" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byRegexp", "options": "^4.*" },
+            "properties": [
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "orange" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "429" },
+            "properties": [
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "yellow" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byRegexp", "options": "^5.*" },
+            "properties": [
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "sum by (code) (rate(http_request_duration_seconds_count{job=\"relatio-gateway\",code=~\"$status_class\",code=~\"$status_code\"}[1m])) * 60",
+          "legendFormat": "{{code}}"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Errors (req/min)",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 18, "w": 12, "h": 8 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqpm",
+          "custom": { "lineWidth": 2, "fillOpacity": 10 }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "4xx" },
+            "properties": [
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "orange" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "5xx" },
+            "properties": [
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "(sum(rate(http_request_duration_seconds_count{job=\"relatio-gateway\",code=~\"4..\"}[1m])) or vector(0)) * 60",
+          "legendFormat": "4xx"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "(sum(rate(http_request_duration_seconds_count{job=\"relatio-gateway\",code=~\"5..\"}[1m])) or vector(0)) * 60",
+          "legendFormat": "5xx"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Avg Response Time by Endpoint (s)",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 18, "w": 12, "h": 8 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": { "lineWidth": 2, "fillOpacity": 0 }
+        }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "sum by (endpoint) (rate(http_request_duration_seconds_sum{job=\"relatio-gateway\"}[1m])) / sum by (endpoint) (rate(http_request_duration_seconds_count{job=\"relatio-gateway\"}[1m]))",
+          "legendFormat": "{{endpoint}}"
         }
       ]
     }
