@@ -28,6 +28,12 @@ services:
       - "8081:80"
     volumes:
       - relatio_seq_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost/ > /dev/null || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
 
   rabbitmq:
     image: rabbitmq:3.13-management
@@ -86,12 +92,15 @@ services:
       Identity__AdminPassword: ${IDENTITY_ADMIN_PASSWORD}
       Identity__RunSeederOnStartup: "true"
       Consul__Url: http://consul:8500
+      Seq__ServerUrl: http://seq:80
     depends_on:
       postgres:
         condition: service_healthy
       keycloak:
         condition: service_started
       consul:
+        condition: service_healthy
+      seq:
         condition: service_healthy
 
   relatio-customers:
@@ -112,12 +121,15 @@ services:
       Keycloak__Authority: http://keycloak:8080/realms/relatio
       Keycloak__Audience: relatio-api
       Consul__Url: http://consul:8500
+      Seq__ServerUrl: http://seq:80
     depends_on:
       postgres:
         condition: service_healthy
       keycloak:
         condition: service_started
       consul:
+        condition: service_healthy
+      seq:
         condition: service_healthy
 
   relatio-contacts:
@@ -143,6 +155,7 @@ services:
       RabbitMq__Password: ${RABBITMQ_PASSWORD}
       RabbitMq__VirtualHost: /
       Consul__Url: http://consul:8500
+      Seq__ServerUrl: http://seq:80
     depends_on:
       postgres:
         condition: service_healthy
@@ -151,6 +164,8 @@ services:
       keycloak:
         condition: service_started
       consul:
+        condition: service_healthy
+      seq:
         condition: service_healthy
 
   relatio-sales:
@@ -179,6 +194,7 @@ services:
       RabbitMq__Password: ${RABBITMQ_PASSWORD}
       RabbitMq__VirtualHost: /
       Consul__Url: http://consul:8500
+      Seq__ServerUrl: http://seq:80
     depends_on:
       postgres:
         condition: service_healthy
@@ -187,6 +203,8 @@ services:
       keycloak:
         condition: service_started
       consul:
+        condition: service_healthy
+      seq:
         condition: service_healthy
       relatio-customers:
         condition: service_started
@@ -214,6 +232,7 @@ services:
       RabbitMq__Password: ${RABBITMQ_PASSWORD}
       RabbitMq__VirtualHost: /
       Consul__Url: http://consul:8500
+      Seq__ServerUrl: http://seq:80
     depends_on:
       postgres:
         condition: service_healthy
@@ -222,6 +241,8 @@ services:
       keycloak:
         condition: service_started
       consul:
+        condition: service_healthy
+      seq:
         condition: service_healthy
 
   consul:
@@ -273,6 +294,7 @@ services:
       Jwt__Issuer: ${JWT_ISSUER}
       Jwt__Audience: ${JWT_AUDIENCE}
       Consul__Url: http://consul:8500
+      Seq__ServerUrl: http://seq:80
       Services__Identity: http://relatio-identity:8080
       Services__Customers: http://relatio-customers:8080
       Services__Contacts: http://relatio-contacts:8080
@@ -280,6 +302,8 @@ services:
       Services__Tasks: http://relatio-tasks:8080
     depends_on:
       consul:
+        condition: service_healthy
+      seq:
         condition: service_healthy
       relatio-identity:
         condition: service_started

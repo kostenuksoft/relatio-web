@@ -15,11 +15,13 @@ using Yarp.ReverseProxy.Transforms.Builder;
 
 var builder = WebApplication.CreateBuilder(args);
 
-Log.Logger = new LoggerConfiguration()
+var seqUrl = builder.Configuration["Seq:ServerUrl"];
+var loggerConfig = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
     .Enrich.FromLogContext()
-    .WriteTo.Console()
-    .CreateLogger();
+    .WriteTo.Console();
+if (seqUrl is not null) loggerConfig.WriteTo.Seq(seqUrl);
+Log.Logger = loggerConfig.CreateLogger();
 
 builder.Host.UseSerilog();
 
@@ -118,15 +120,17 @@ builder.Services.AddReverseProxy()
 var app = builder.Build();
 
 app.UseMiddleware<CorrelationIdMiddleware>();
+app.UseHttpMetrics();
+app.UseSerilogRequestLogging();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseRateLimiter();
-app.UseHttpMetrics();
 
 app.MapMetrics();
 app.MapHealthChecks("/health/live");
 app.MapControllers();
 app.MapReverseProxy();
 
+Log.Information("Gateway - ready");
 app.Run();

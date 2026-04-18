@@ -49,7 +49,11 @@ try
         });
 
     builder.Host.UseSerilog((context, services, configuration) =>
-        configuration.ReadFrom.Configuration(context.Configuration));
+    {
+        configuration.ReadFrom.Configuration(context.Configuration);
+        var seqUrl = context.Configuration["Seq:ServerUrl"];
+        if (seqUrl is not null) configuration.WriteTo.Seq(seqUrl);
+    });
 
     builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
     builder.Services.AddControllers();
@@ -98,6 +102,7 @@ try
     }
 
     app.UseMiddleware<CorrelationIdMiddleware>();
+    app.UseSerilogRequestLogging();
     app.UseExceptionHandler();
     app.UseStatusCodePages();
     app.UseAuthentication();
@@ -122,6 +127,7 @@ try
 
     app.MapControllers();
 
+    Log.Information("Identity service - ready");
     app.Run();
 }
 catch (Exception ex)

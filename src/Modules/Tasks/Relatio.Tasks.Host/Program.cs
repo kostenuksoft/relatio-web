@@ -48,7 +48,11 @@ try
         });
 
     builder.Host.UseSerilog((context, services, configuration) =>
-        configuration.ReadFrom.Configuration(context.Configuration));
+    {
+        configuration.ReadFrom.Configuration(context.Configuration);
+        var seqUrl = context.Configuration["Seq:ServerUrl"];
+        if (seqUrl is not null) configuration.WriteTo.Seq(seqUrl);
+    });
 
     builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
     builder.Services.AddControllers();
@@ -92,6 +96,7 @@ try
     Log.Information("Tasks service - starting...");
 
     app.UseMiddleware<CorrelationIdMiddleware>();
+    app.UseSerilogRequestLogging();
     app.UseExceptionHandler();
     app.UseStatusCodePages();
     app.UseAuthentication();
@@ -116,6 +121,7 @@ try
 
     app.MapControllers();
 
+    Log.Information("Tasks service - ready");
     app.Run();
 }
 catch (Exception ex)
