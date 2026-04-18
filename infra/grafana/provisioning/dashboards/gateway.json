@@ -12,7 +12,7 @@
       "gridPos": { "x": 0, "y": 0, "w": 8, "h": 8 },
       "targets": [
         {
-          "expr": "sum(rate(http_requests_received_total{job=\"relatio-gateway\"}[1m]))",
+          "expr": "sum(rate(http_request_duration_seconds_count{job=\"relatio-gateway\"}[1m]))",
           "legendFormat": "requests/s"
         }
       ]
@@ -24,7 +24,7 @@
       "gridPos": { "x": 8, "y": 0, "w": 8, "h": 8 },
       "targets": [
         {
-          "expr": "100 * sum(rate(http_requests_received_total{job=\"relatio-gateway\",code=~\"4..|5..\"}[1m])) / sum(rate(http_requests_received_total{job=\"relatio-gateway\"}[1m]))",
+          "expr": "100 * sum(rate(http_request_duration_seconds_count{job=\"relatio-gateway\",code=~\"4..|5..\"}[1m])) / sum(rate(http_request_duration_seconds_count{job=\"relatio-gateway\"}[1m]))",
           "legendFormat": "error %"
         }
       ]

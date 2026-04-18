@@ -1,9 +1,11 @@
-$base = "http://localhost:8500/v1/kv"
+$Base = "http://localhost:8500/v1/kv"
 
-$keys = @{
+$Keys = @{
     "relatio/default/RateLimiting"  = '{"RequestsPerWindow":30,"WindowSeconds":60}'
     "relatio/default/ApiVersioning" = '{"DefaultVersion":"1.0"}'
     "relatio/default/Pagination"    = '{"DefaultPageSize":20}'
+
+    "relatio/development/Logging"   = '{"MinimumLevel":"Debug"}'
 
     "relatio/gateway/RateLimiting"  = '{"RequestsPerWindow":30,"WindowSeconds":60}'
 
@@ -13,12 +15,12 @@ $keys = @{
     "relatio/tasks/Pagination"      = '{"DefaultPageSize":20}'
 }
 
-foreach ($key in $keys.Keys) {
+foreach ($Key in $Keys.Keys) {
     try {
-        Invoke-RestMethod -Uri "$base/$key" -Method PUT -Body $keys[$key] | Out-Null
-        write-host "  $key"
+        Invoke-RestMethod -Uri "$Base/$Key" -Method PUT -Body $Keys[$Key] | Out-Null
+        write-host "  $Key"
     }
     catch {
-        write-host "  failed: $key - $($_.Exception.Message)"
+        write-host "  failed: $Key - $($_.Exception.Message)"
     }
 }

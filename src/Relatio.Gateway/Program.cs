@@ -25,8 +25,17 @@ builder.Host.UseSerilog();
 
 var consulUrl = builder.Configuration["Consul:Url"] ?? "http://localhost:8500";
 
+var consulEnv = builder.Environment.EnvironmentName.ToLowerInvariant();
+
 builder.Configuration
     .AddConsul("relatio/default", options =>
+    {
+        options.ConsulConfigurationOptions = c => c.Address = new Uri(consulUrl);
+        options.Optional = true;
+        options.ReloadOnChange = true;
+        options.PollWaitTime = TimeSpan.FromSeconds(30);
+    })
+    .AddConsul($"relatio/{consulEnv}", options =>
     {
         options.ConsulConfigurationOptions = c => c.Address = new Uri(consulUrl);
         options.Optional = true;
