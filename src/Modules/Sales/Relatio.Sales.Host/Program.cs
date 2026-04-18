@@ -8,6 +8,7 @@ using Relatio.Sales.Application;
 using Relatio.Sales.Infrastructure;
 using Relatio.Shared.Extensions;
 using Relatio.Shared.Infrastructure;
+using Winton.Extensions.Configuration.Consul;
 using Relatio.Shared.Middleware;
 using Scalar.AspNetCore;
 using Serilog;
@@ -19,6 +20,24 @@ Log.Logger = new LoggerConfiguration()
 try
 {
     var builder = WebApplication.CreateBuilder(args);
+
+    var consulUrl = builder.Configuration["Consul:Url"] ?? "http://localhost:8500";
+
+    builder.Configuration
+        .AddConsul("relatio/default", options =>
+        {
+            options.ConsulConfigurationOptions = c => c.Address = new Uri(consulUrl);
+            options.Optional = true;
+            options.ReloadOnChange = true;
+            options.PollWaitTime = TimeSpan.FromSeconds(30);
+        })
+        .AddConsul("relatio/sales", options =>
+        {
+            options.ConsulConfigurationOptions = c => c.Address = new Uri(consulUrl);
+            options.Optional = true;
+            options.ReloadOnChange = true;
+            options.PollWaitTime = TimeSpan.FromSeconds(30);
+        });
 
     builder.Host.UseSerilog((context, services, configuration) =>
         configuration.ReadFrom.Configuration(context.Configuration));
