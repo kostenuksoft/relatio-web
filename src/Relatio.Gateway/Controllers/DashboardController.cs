@@ -1,10 +1,14 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Relatio.Gateway.Services;
 
 namespace Relatio.Gateway.Controllers;
 
 [Route("api/dashboard")]
 [ApiController]
+[Authorize]
+[EnableRateLimiting("gateway")]
 public sealed class DashboardController : ControllerBase
 {
     private readonly DashboardComposer _composer;

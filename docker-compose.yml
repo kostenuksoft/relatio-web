@@ -85,11 +85,14 @@ services:
       Identity__AdminEmail: ${IDENTITY_ADMIN_EMAIL}
       Identity__AdminPassword: ${IDENTITY_ADMIN_PASSWORD}
       Identity__RunSeederOnStartup: "true"
+      Consul__Url: http://consul:8500
     depends_on:
       postgres:
         condition: service_healthy
       keycloak:
         condition: service_started
+      consul:
+        condition: service_healthy
 
   relatio-customers:
     build:
@@ -108,11 +111,14 @@ services:
       Jwt__Audience: ${JWT_AUDIENCE}
       Keycloak__Authority: http://keycloak:8080/realms/relatio
       Keycloak__Audience: relatio-api
+      Consul__Url: http://consul:8500
     depends_on:
       postgres:
         condition: service_healthy
       keycloak:
         condition: service_started
+      consul:
+        condition: service_healthy
 
   relatio-contacts:
     build:
@@ -136,6 +142,7 @@ services:
       RabbitMq__Username: ${RABBITMQ_USER}
       RabbitMq__Password: ${RABBITMQ_PASSWORD}
       RabbitMq__VirtualHost: /
+      Consul__Url: http://consul:8500
     depends_on:
       postgres:
         condition: service_healthy
@@ -143,6 +150,8 @@ services:
         condition: service_healthy
       keycloak:
         condition: service_started
+      consul:
+        condition: service_healthy
 
   relatio-sales:
     build:
@@ -169,6 +178,7 @@ services:
       RabbitMq__Username: ${RABBITMQ_USER}
       RabbitMq__Password: ${RABBITMQ_PASSWORD}
       RabbitMq__VirtualHost: /
+      Consul__Url: http://consul:8500
     depends_on:
       postgres:
         condition: service_healthy
@@ -176,6 +186,8 @@ services:
         condition: service_healthy
       keycloak:
         condition: service_started
+      consul:
+        condition: service_healthy
       relatio-customers:
         condition: service_started
 
@@ -201,6 +213,7 @@ services:
       RabbitMq__Username: ${RABBITMQ_USER}
       RabbitMq__Password: ${RABBITMQ_PASSWORD}
       RabbitMq__VirtualHost: /
+      Consul__Url: http://consul:8500
     depends_on:
       postgres:
         condition: service_healthy
@@ -208,6 +221,44 @@ services:
         condition: service_healthy
       keycloak:
         condition: service_started
+      consul:
+        condition: service_healthy
+
+  consul:
+    image: hashicorp/consul:1.19
+    container_name: relatio_consul
+    command: "agent -dev -client=0.0.0.0 -log-level=warn"
+    ports:
+      - "8500:8500"
+    healthcheck:
+      test: ["CMD", "consul", "members"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  prometheus:
+    image: prom/prometheus:v2.53.0
+    container_name: relatio_prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    depends_on:
+      relatio-gateway:
+        condition: service_started
+
+  grafana:
+    image: grafana/grafana:11.1.0
+    container_name: relatio_grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - ./infra/grafana/provisioning:/etc/grafana/provisioning
+      - relatio_grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
 
   relatio-gateway:
     build:
@@ -218,12 +269,18 @@ services:
       - "5200:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
+      Jwt__Secret: ${JWT_SECRET}
+      Jwt__Issuer: ${JWT_ISSUER}
+      Jwt__Audience: ${JWT_AUDIENCE}
+      Consul__Url: http://consul:8500
       Services__Identity: http://relatio-identity:8080
       Services__Customers: http://relatio-customers:8080
       Services__Contacts: http://relatio-contacts:8080
       Services__Sales: http://relatio-sales:8080
       Services__Tasks: http://relatio-tasks:8080
     depends_on:
+      consul:
+        condition: service_healthy
       relatio-identity:
         condition: service_started
       relatio-customers:
@@ -255,3 +312,4 @@ volumes:
   relatio_postgres_data:
   relatio_seq_data:
   relatio_rabbitmq_data:
+  relatio_grafana_data:

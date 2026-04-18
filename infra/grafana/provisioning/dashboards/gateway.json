@@ -1,0 +1,45 @@
+{
+  "title": "Relatio Gateway",
+  "uid": "relatio-gateway",
+  "schemaVersion": 38,
+  "refresh": "5s",
+  "time": { "from": "now-5m", "to": "now" },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Throughput (req/s)",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 0, "w": 8, "h": 8 },
+      "targets": [
+        {
+          "expr": "sum(rate(http_requests_received_total{job=\"relatio-gateway\"}[1m]))",
+          "legendFormat": "requests/s"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Error Rate (%)",
+      "type": "timeseries",
+      "gridPos": { "x": 8, "y": 0, "w": 8, "h": 8 },
+      "targets": [
+        {
+          "expr": "100 * sum(rate(http_requests_received_total{job=\"relatio-gateway\",code=~\"4..|5..\"}[1m])) / sum(rate(http_requests_received_total{job=\"relatio-gateway\"}[1m]))",
+          "legendFormat": "error %"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Latency p95 (s)",
+      "type": "timeseries",
+      "gridPos": { "x": 16, "y": 0, "w": 8, "h": 8 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job=\"relatio-gateway\"}[1m])) by (le))",
+          "legendFormat": "p95"
+        }
+      ]
+    }
+  ]
+}
